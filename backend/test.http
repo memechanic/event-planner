@@ -1,0 +1,53 @@
+### Создание события
+
+POST http://127.0.0.1:8000/api/events/ HTTP/1.1
+content-type: application/json
+
+{
+  "title": "Какое-то крутое событиееее",
+  "description": "Выбираем дату",
+  "dates": ["2026-05-10", "2026-05-11"]
+}
+
+### Просмотр события id сюда айди
+
+GET http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/ HTTP/1.1
+content-type: application/json
+
+### Создание участника
+
+POST http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/participants/ HTTP/1.1
+content-type: application/json
+
+{
+  "username":"anton2009"
+}
+
+### Получение участников
+
+GET http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/participants/ HTTP/1.1
+content-type: application/json
+
+### Создание голоса
+
+POST http://127.0.0.1:8000/api/votes/
+content-type: application/json
+
+{
+  "participant": "СЮДА АЙДИ УЧАСТНИКА",
+  "date_option": 1
+}
+
+### Создание сообщения в ивенте с id выше и созданым участником
+
+POST  http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/messages/ HTTP/1.1
+content-type: application/json
+
+{
+  "participant": "СЮДА АЙДИ УЧАСТНИКА",
+  "text":"Балаболю балоболю"
+}
+
+### Получение сообщений события
+GET  http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/messages/ HTTP/1.1
+content-type: application/json

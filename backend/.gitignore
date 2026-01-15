@@ -214,6 +214,3 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-
-# http rest framework tests
-*.http
