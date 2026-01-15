@@ -107,6 +107,12 @@ const eventStore = useEventStore()
 // Данные формы
 const title = ref('')
 const description = ref('')
+const getTomorrowDate = () => {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(18, 0, 0, 0)
+  return tomorrow.toISOString().slice(0, 16)
+}
 const dates = ref([getTomorrowDate()]) // Начинаем с одной даты (завтра)
 
 // Состояние
@@ -128,12 +134,12 @@ const getMinDate = () => {
 }
 
 // Получить дату на завтра 18:00
-const getTomorrowDate = () => {
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  tomorrow.setHours(18, 0, 0, 0)
-  return tomorrow.toISOString().slice(0, 16)
-}
+//const getTomorrowDate = () => {
+//  const tomorrow = new Date()
+//  tomorrow.setDate(tomorrow.getDate() + 1)
+//  tomorrow.setHours(18, 0, 0, 0)
+//  return tomorrow.toISOString().slice(0, 16)
+//}
 
 // Добавить новую дату (последняя + 1 день)
 const addDate = () => {
@@ -155,13 +161,39 @@ const handleSubmit = async () => {
     alert('Заполните название и все даты')
     return
   }
+  const processedDates = dates.value.map(dateStr => {
+    try {
+      // input[type="datetime-local"] возвращает строку в формате "YYYY-MM-DDTHH:mm"
+      // Нужно добавить временную зону
+      const dateObj = new Date(dateStr);
+      
+      // Проверяем, что дата валидна
+      if (isNaN(dateObj.getTime())) {
+        console.error('❌ Неверная дата:', dateStr);
+        return null;
+      }
+      
+      // Преобразуем в ISO строку (с часовым поясом UTC)
+      const isoString = dateObj.toISOString();
+      console.log(`✅ Преобразовано: ${dateStr} → ${isoString}`);
+      return isoString;
+      
+    } catch (error) {
+      console.error('❌ Ошибка преобразования даты:', dateStr, error);
+      return null;
+    }
+  }).filter(date => date !== null); // Убираем невалидные даты
   
+  if (processedDates.length === 0) {
+    alert('Нет валидных дат для события');
+    return;
+  }
   console.log('Отправка данных:', {
     title: title.value,
     description: description.value,
     dates: dates.value
   })
-  
+
   // Подготавливаем данные для API
   const eventData = {
     title: title.value.trim(),
@@ -180,7 +212,7 @@ const handleSubmit = async () => {
     console.log('✅ Событие создано, ID:', createdEvent.id)
     
     // Переходим на страницу события
-    router.push(`/event/${createdEvent.id}`)
+    router.push(`/events/${createdEvent.id}`)
     
   } catch (err) {
     console.error('❌ Ошибка при создании:', err)

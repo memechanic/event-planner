@@ -30,7 +30,7 @@
         <h2>📋 Варианты дат</h2>
         <div class="dates-grid">
           <div 
-            v-for="date in event.dates" 
+            v-for="date in dates" 
             :key="date" 
             class="date-card"
             :class="{ selected: selectedDate === date }"
@@ -101,6 +101,10 @@ const error = computed(() => eventStore.error)
 const votesByDate = computed(() => eventStore.votesByDate || {})
 const uniqueParticipants = computed(() => eventStore.uniqueParticipants || [])
 
+const dates = computed(() => {
+  return event.value?.date_options?.map(d => d.date) || []
+})
+
 // URL события
 const eventUrl = computed(() => {
   if (!event.value?.id) return ''
@@ -124,8 +128,11 @@ const loadEvent = async () => {
     await eventStore.getEvent(eventId)
     
     // Если это демо или новое событие, выбираем первую дату
-    if (event.value && event.value.dates?.length > 0 && !selectedDate.value) {
-      selectedDate.value = event.value.dates[0]
+    // if (event.value && event.value.dates?.length > 0 && !selectedDate.value) {
+    //   selectedDate.value = event.value.dates[0]
+    // }
+    if (dates.value.length > 0 && !selectedDate.value) {
+      selectedDate.value = dates.value[0]
     }
   }
 }
