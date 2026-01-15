@@ -4,7 +4,13 @@ from rest_framework.response import Response
 from django.db.models import QuerySet
 
 from .models import Event, Vote, Message
-from .serializers import EventCreateSerializer, EventDetailSerializer, VoteSerializer, MessageSerializer, ParticipantSerializer
+from .serializers import (
+    EventCreateSerializer,
+    EventDetailSerializer,
+    VoteSerializer,
+    MessageSerializer,
+    ParticipantSerializer
+    )
 
 
 class EventCreateView(generics.CreateAPIView):
@@ -21,7 +27,7 @@ class EventDetailView(generics.RetrieveAPIView):
 class VoteCreateView(generics.CreateAPIView):
     serializer_class = VoteSerializer
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -44,4 +50,11 @@ class EventMessagesView(generics.ListAPIView):
         event_id = self.kwargs['event_id']
         queryset = Message.objects.filter(event_id=event_id).order_by('created_at')
         return queryset
-    
+
+
+class ParticipantCreateView(generics.CreateAPIView):
+    serializer_class = ParticipantSerializer
+
+    def perform_create(self, serializer):
+        event_id = self.kwargs['event_id']
+        serializer.save(event_id=event_id)
