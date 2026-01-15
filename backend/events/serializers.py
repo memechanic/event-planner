@@ -22,7 +22,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ('id', 'sender_name', 'text', 'created_at')
+        fields = ('id', 'sender_username', 'text', 'created_at')
 
 
 class EventDetailSerializer(serializers.ModelSerializer):

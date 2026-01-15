@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django.db.models import QuerySet
 
 from .models import Event, Vote, Message
-from .serializers import EventCreateSerializer, EventDetailSerializer, VoteSerializer, MessageSerializer
+from .serializers import EventCreateSerializer, EventDetailSerializer, VoteSerializer, MessageSerializer, ParticipantSerializer
 
 
 class EventCreateView(generics.CreateAPIView):
@@ -23,7 +23,7 @@ class VoteCreateView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exceptrion=True)
+        serializer.is_valid(raise_exception=True)
 
         Vote.objects.update_or_create(
             participant = serializer.validated_data['participant'],
