@@ -212,7 +212,7 @@ const handleSubmit = async () => {
     console.log('✅ Событие создано, ID:', createdEvent.id)
     
     // Переходим на страницу события
-    router.push(`/events/${createdEvent.id}`)
+    router.push(`/event/${createdEvent.id}`)
     
   } catch (err) {
     console.error('❌ Ошибка при создании:', err)
