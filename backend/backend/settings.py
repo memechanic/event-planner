@@ -10,16 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os, dj_database_url
+# import os, dj_database_url
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-load_dotenv(BASE_DIR / '.env')
+# load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -79,14 +79,21 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-if DATABASE_URL is None:
-    raise ValueError('Database url can not be None')
-
 DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL)
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "mydatabase",
+    }
 }
+
+# DATABASE_URL = os.getenv('DATABASE_URL')
+
+# if DATABASE_URL is None:
+#     raise ValueError('Database url can not be None')
+
+# DATABASES = {
+#     'default': dj_database_url.parse(DATABASE_URL)
+# }
 
 
 # Password validation
