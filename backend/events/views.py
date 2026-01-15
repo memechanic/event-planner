@@ -1,8 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from .models import Event, Vote
-from .serializers import EventCreateSerializer, EventDetailSerializer, VoteSerializer
+from django.db.models import QuerySet
+
+from .models import Event, Vote, Message
+from .serializers import EventCreateSerializer, EventDetailSerializer, VoteSerializer, MessageSerializer
 
 
 class EventCreateView(generics.CreateAPIView):
@@ -30,3 +32,16 @@ class VoteCreateView(generics.CreateAPIView):
 
         return Response({'status': 'voted'}, status=status.HTTP_200_OK)
 
+
+class MessageCreateView(generics.CreateAPIView):
+    serializer_class = MessageSerializer
+
+
+class EventMessagesView(generics.ListAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self) -> QuerySet[Message]: #type:ignore Ошибка в типизации DRF
+        event_id = self.kwargs['event_id']
+        queryset = Message.objects.filter(event_id=event_id).order_by('created_at')
+        return queryset
+    
