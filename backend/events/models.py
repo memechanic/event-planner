@@ -22,7 +22,7 @@ class DateOption(models.Model):
         on_delete=models.CASCADE
     )
 
-    date = models.DateField()
+    date = models.DateTimeField()
 
     def __str__(self):
         return f"{self.event.title} — {self.date}"

@@ -45,7 +45,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
 
 class EventCreateSerializer(serializers.ModelSerializer):
     dates = serializers.ListField(
-        child=serializers.DateField(),
+        child=serializers.DateTimeField(),
         write_only=True
     )
 
