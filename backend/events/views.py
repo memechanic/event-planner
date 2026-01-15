@@ -1,9 +1,9 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 
 from django.db.models import QuerySet
 
-from .models import Event, Vote, Message
+from .models import Event, Participant, Vote, Message
 from .serializers import (
     EventCreateSerializer,
     EventDetailSerializer,
@@ -39,12 +39,12 @@ class VoteCreateView(generics.CreateAPIView):
         return Response({'status': 'voted'}, status=status.HTTP_200_OK)
 
 
-class MessageCreateView(generics.CreateAPIView):
+class EventMessagesView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
-
-
-class EventMessagesView(generics.ListAPIView):
-    serializer_class = MessageSerializer
+    
+    def perform_create(self, serializer):
+        event_id = self.kwargs['event_id']
+        serializer.save(event_id=event_id)
 
     def get_queryset(self) -> QuerySet[Message]: #type:ignore Ошибка в типизации DRF
         event_id = self.kwargs['event_id']
@@ -52,9 +52,14 @@ class EventMessagesView(generics.ListAPIView):
         return queryset
 
 
-class ParticipantCreateView(generics.CreateAPIView):
+class EventParticipantView(generics.ListCreateAPIView):
     serializer_class = ParticipantSerializer
 
     def perform_create(self, serializer):
         event_id = self.kwargs['event_id']
         serializer.save(event_id=event_id)
+    
+    def get_queryset(self) -> QuerySet[Participant]:  #type:ignore Ошибка в типизации DRF
+        event_id = self.kwargs['event_id']
+        queryset = Participant.objects.filter(event_id=event_id)
+        return queryset
