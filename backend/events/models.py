@@ -3,8 +3,19 @@ import uuid
 # Create your models here.
 
 
+class EventUser(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(max_length=100, unique=True)
+    email = models.EmailField(max_length=100, unique=True)
+
+
 class Event(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    event_user = models.ForeignKey(
+        EventUser,
+        on_delete=models.CASCADE,
+        related_name='events',
+    )
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -37,11 +48,19 @@ class Participant(models.Model):
         on_delete=models.CASCADE
     )
 
-    username = models.CharField(max_length=100, unique=True)
+    event_user = models.ForeignKey(
+        EventUser,
+        on_delete=models.CASCADE,
+        related_name='event_user',
+        )
+
+    class Meta:
+        unique_together = ('event', 'event_user')
 
     def __str__(self) -> str:
-        return f"{self.event}:{self.username}"
-    
+        return f"{self.event}:{self.event_user.username}"
+
+
 class Vote(models.Model):
     participant = models.ForeignKey(
         Participant,
@@ -61,7 +80,7 @@ class Vote(models.Model):
         unique_together = ('participant', 'date_option')
 
     def __str__(self) -> str:
-        return f"{self.participant.username}: {self.date_option.date}"
+        return f"{self.participant.event_user.username}: {self.date_option.date}"
 
 
 class Message(models.Model):

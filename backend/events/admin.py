@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Event, DateOption, Participant, Vote, Message
+from .models import Event, DateOption, EventUser, Participant, Vote, Message
 
 
 @admin.register(Event)
@@ -16,9 +16,14 @@ class DateOprionAdmin(admin.ModelAdmin):
 
 @admin.register(Participant)
 class ParticipantAdmin(admin.ModelAdmin):
-    list_display = ('username', 'event')
-    search_fields = ('name',)
+    list_display = ('event_user', 'event')
     list_filter = ('event',)
+
+
+@admin.register(EventUser)
+class EventUserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email')
+    search_fields = ('username',)
 
 
 @admin.register(Vote)

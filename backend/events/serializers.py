@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Event, DateOption, Participant, Vote, Message
+from .models import Event, DateOption, EventUser, Participant, Vote, Message
 
 
 class DateOptionSerializer(serializers.ModelSerializer):
@@ -8,10 +8,33 @@ class DateOptionSerializer(serializers.ModelSerializer):
         fields = ('id', 'date')
 
 
+class EventUserGetOrCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventUser
+        fields = ('id', 'username', 'email')
+        read_only_fields = ('id',)
+
+    def create(self, validated_data):
+        email = validated_data['email']
+        username = validated_data['username']
+
+        user, created = EventUser.objects.get_or_create(
+            email=email,
+            defaults={'username': username}
+        )
+
+        # если пользователь уже был — можно обновить username
+        if not created and user.username != username:
+            user.username = username
+            user.save(update_fields=['username'])
+
+        return user
+
+
 class ParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Participant
-        fields = ('id', 'username')
+        fields = ('id', 'event_user')
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -34,6 +57,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
         model = Event
         fields = (
             'id',
+            'event_user',
             'title',
             'description',
             'created_at',
@@ -51,7 +75,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('id', 'title', 'description', 'dates')
+        fields = ('id', 'event_user', 'title', 'description', 'dates')
 
     def create(self, validated_data):
         dates = validated_data.pop('dates')

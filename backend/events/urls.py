@@ -5,6 +5,7 @@ from .views import (
     VoteCreateView,
     EventMessagesView,
     EventParticipantView,
+    EventUserGetOrCreateView,
     )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('events/<uuid:event_id>/messages/', EventMessagesView.as_view()),
     path('events/<uuid:event_id>/participants/', EventParticipantView.as_view()),
     path('events/<uuid:event_id>/votes/', VoteCreateView.as_view()),
+    path('auth/login/', EventUserGetOrCreateView.as_view()),
 ]

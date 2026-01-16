@@ -1,9 +1,21 @@
+### Создание пользователя
+
+POST http://127.0.0.1:8000/api/auth/login/ HTTP/1.1
+content-type: application/json
+
+{
+  "username": "anton2009",
+  "email": "anton2009@mail.ru"
+}
+
+
 ### Создание события
 
 POST http://127.0.0.1:8000/api/events/ HTTP/1.1
 content-type: application/json
 
 {
+  "event_user": "79546be5-a5c6-46ae-ad80-7c5add7629ff",
   "title": "Какое-то крутое событиееее",
   "description": "Выбираем дату",
   "dates": ["2026-05-10", "2026-05-11"]
@@ -11,43 +23,43 @@ content-type: application/json
 
 ### Просмотр события id сюда айди
 
-GET http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/ HTTP/1.1
+GET http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/ HTTP/1.1
 content-type: application/json
 
 ### Создание участника
 
-POST http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/participants/ HTTP/1.1
+POST http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/participants/ HTTP/1.1
 content-type: application/json
 
 {
-  "username":"anton2009"
+  "event_user": "79546be5-a5c6-46ae-ad80-7c5add7629ff"
 }
 
 ### Получение участников
 
-GET http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/participants/ HTTP/1.1
+GET http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/participants/ HTTP/1.1
 content-type: application/json
 
 ### Создание голоса
 
-POST http://127.0.0.1:8000/api/votes/
+POST http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/votes/
 content-type: application/json
 
 {
-  "participant": "СЮДА АЙДИ УЧАСТНИКА",
+  "participant": "11a1fffe-4608-4b85-989c-2f171d6b2173",
   "date_option": 1
 }
 
 ### Создание сообщения в ивенте с id выше и созданым участником
 
-POST  http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/messages/ HTTP/1.1
+POST  http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/messages/ HTTP/1.1
 content-type: application/json
 
 {
-  "participant": "СЮДА АЙДИ УЧАСТНИКА",
+  "participant": "11a1fffe-4608-4b85-989c-2f171d6b2173",
   "text":"Балаболю балоболю"
 }
 
 ### Получение сообщений события
-GET  http://127.0.0.1:8000/api/events/СЮДА АЙДИ СОБЫТИЯ/messages/ HTTP/1.1
+GET  http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/messages/ HTTP/1.1
 content-type: application/json

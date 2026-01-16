@@ -1,4 +1,4 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from django.db.models import QuerySet
@@ -9,7 +9,8 @@ from .serializers import (
     EventDetailSerializer,
     VoteSerializer,
     MessageSerializer,
-    ParticipantSerializer
+    ParticipantSerializer,
+    EventUserGetOrCreateSerializer
     )
 
 
@@ -23,11 +24,13 @@ class EventDetailView(generics.RetrieveAPIView):
     serializer_class = EventDetailSerializer
     lookup_field = 'id'
 
+class EventUserGetOrCreateView(generics.CreateAPIView):
+    serializer_class = EventUserGetOrCreateSerializer
 
 class VoteCreateView(generics.CreateAPIView):
     serializer_class = VoteSerializer
 
-    def create(self, request):
+    def create(self, request, event_id):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
