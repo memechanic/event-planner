@@ -18,7 +18,7 @@
           </router-link>
 
           <!-- Навигационные ссылки -->
-          <div class="flex items-center space-x-2 sm:space-x-4">
+          <!-- <div class="flex items-center space-x-2 sm:space-x-4">
             <router-link 
               to="/" 
               class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
@@ -44,6 +44,54 @@
             >
               <span class="hidden sm:inline">Демо</span>
               <span class="sm:hidden">👁️</span>
+            </router-link>
+          </div> -->
+          <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Основные ссылки -->
+            <router-link 
+              to="/" 
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <span class="hidden sm:inline">Главная</span>
+              <span class="sm:hidden">🏠</span>
+            </router-link>
+            
+            <router-link 
+              to="/create" 
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <span class="hidden sm:inline">Создать</span>
+              <span class="sm:hidden">➕</span>
+            </router-link>
+            
+            <router-link 
+              to="/event/demo" 
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <span class="hidden sm:inline">Демо</span>
+              <span class="sm:hidden">👁️</span>
+            </router-link>
+
+            <!-- Кнопка авторизации / выхода -->
+            <button
+              v-if="authStore.isAuthenticated"
+              @click="logout"
+              class="px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <span class="hidden sm:inline">Выйти</span>
+              <span class="sm:hidden">🚪</span>
+            </button>
+
+            <router-link
+              v-else
+              to="/login"
+              class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            >
+              <span class="hidden sm:inline">Войти</span>
+              <span class="sm:hidden">🔑</span>
             </router-link>
           </div>
         </div>
@@ -90,6 +138,17 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+const logout = () => {
+  authStore.logout()
+  // Можно перенаправить на главную или оставить на текущей странице
+  router.push('/')
+}
 
 // Статус соединения
 const isOnline = ref(navigator.onLine)

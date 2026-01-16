@@ -181,7 +181,9 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useEventStore } from '@/stores/event'
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
 const router = useRouter()
 const eventStore = useEventStore()
 
@@ -270,6 +272,7 @@ const handleSubmit = async () => {
   // Подготавливаем данные для API
   const eventData = {
     title: title.value.trim(),
+    event_user: authStore.userId,
     description: description.value.trim(),
     dates: dates.value.map(date => {
       // Преобразуем local datetime в ISO строку
