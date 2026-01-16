@@ -1,15 +1,43 @@
 <template>
-  <div class="event-create">
-    <div class="header">
-      <h1>📅 Создать новое событие</h1>
-      <router-link to="/" class="back-link">← На главную</router-link>
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <!-- Заголовок -->
+    <div class="mb-8">
+      <router-link 
+        to="/" 
+        class="inline-flex items-center text-gray-600 hover:text-blue-600 mb-4 group transition-colors"
+      >
+        <svg 
+          class="w-5 h-5 mr-2 transform group-hover:-translate-x-0.5 transition-transform" 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        На главную
+      </router-link>
+      
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+          <span class="text-white text-lg">📅</span>
+        </div>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          Создать новое событие
+        </h1>
+      </div>
+      <p class="text-gray-600 mt-2 max-w-3xl">
+        Заполните форму и создайте событие для совместного планирования с друзьями или коллегами
+      </p>
     </div>
     
-    <div class="form-container">
-      <form @submit.prevent="handleSubmit" class="event-form">
+    <!-- Форма -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100">
+      <form @submit.prevent="handleSubmit" class="space-y-8">
         <!-- Название -->
-        <div class="form-group">
-          <label for="title">Название события *</label>
+        <div>
+          <label for="title" class="block text-sm font-semibold text-gray-800 mb-2">
+            Название события <span class="text-red-500">*</span>
+          </label>
           <input
             id="title"
             v-model="title"
@@ -17,79 +45,132 @@
             placeholder="Например: Встреча команды, День рождения, Встреча с клиентом"
             required
             :disabled="loading"
+            class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 placeholder-gray-400"
           />
         </div>
         
         <!-- Описание -->
-        <div class="form-group">
-          <label for="description">Описание</label>
+        <div>
+          <label for="description" class="block text-sm font-semibold text-gray-800 mb-2">
+            Описание
+          </label>
           <textarea
             id="description"
             v-model="description"
             rows="3"
             placeholder="Детали события, адрес, что взять с собой..."
             :disabled="loading"
+            class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 resize-none placeholder-gray-400"
           ></textarea>
         </div>
         
         <!-- Даты для голосования -->
-        <div class="form-group">
-          <label>Даты для голосования *</label>
-          <p class="hint">Укажите несколько вариантов, участники выберут подходящие</p>
-          
-          <div v-for="(date, index) in dates" :key="index" class="date-row">
-            <input
-              v-model="dates[index]"
-              type="datetime-local"
-              :min="getMinDate()"
-              required
-              :disabled="loading"
-              class="date-input"
-            />
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-semibold text-gray-800">
+              Даты для голосования <span class="text-red-500">*</span>
+            </label>
             <button
               type="button"
-              @click="removeDate(index)"
-              :disabled="dates.length <= 1 || loading"
-              class="remove-date-btn"
-              title="Удалить дату"
+              @click="addDate"
+              :disabled="loading"
+              class="text-sm text-blue-600 hover:text-blue-800 font-semibold transition-colors disabled:opacity-50"
             >
-              ×
+              + Добавить дату
             </button>
           </div>
           
-          <button
-            type="button"
-            @click="addDate"
-            :disabled="loading"
-            class="add-date-btn"
-          >
-            + Добавить дату
-          </button>
-        </div>
-        
-        <!-- Кнопка отправки -->
-        <div class="form-actions">
-          <button
-            type="submit"
-            :disabled="loading || !isFormValid"
-            class="submit-btn"
-          >
-            <span v-if="loading">⌛ Создание...</span>
-            <span v-else>🎉 Создать событие</span>
-          </button>
+          <p class="text-sm text-gray-500 mb-4">
+            Укажите несколько вариантов, участники выберут подходящие
+          </p>
           
-          <router-link to="/" class="cancel-btn">Отмена</router-link>
+          <div class="space-y-3">
+            <div
+              v-for="(date, index) in dates"
+              :key="index"
+              class="flex items-center gap-3"
+            >
+              <input
+                v-model="dates[index]"
+                type="datetime-local"
+                :min="getMinDate()"
+                required
+                :disabled="loading"
+                class="flex-1 px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+              />
+              <button
+                type="button"
+                @click="removeDate(index)"
+                :disabled="dates.length <= 1 || loading"
+                class="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Удалить дату"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
         
-        <!-- Ошибки -->
-        <div v-if="error" class="error-message">
-          ⚠️ {{ error }}
+        <!-- Кнопки -->
+        <div class="pt-4">
+          <div class="flex flex-col sm:flex-row gap-4">
+            <button
+              type="submit"
+              :disabled="loading || !isFormValid"
+              class="flex-1 py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow"
+            >
+              <span v-if="loading" class="flex items-center justify-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Создание...
+              </span>
+              <span v-else class="flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                🎉 Создать событие
+              </span>
+            </button>
+            
+            <router-link 
+              to="/" 
+              class="py-4 px-6 border-2 border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 text-center"
+            >
+              Отмена
+            </router-link>
+          </div>
+          
+          <!-- Ошибка -->
+          <div 
+            v-if="error" 
+            class="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start"
+          >
+            <svg class="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-red-700">{{ error }}</span>
+          </div>
         </div>
         
-        <!-- Подсказка -->
-        <div class="info-box">
-          <p>💡 После создания вы получите уникальную ссылку, которую можно отправить участникам.</p>
-          <p>📱 Голосование работает даже без регистрации.</p>
+        <!-- Информационный блок -->
+        <div class="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
+          <div class="flex items-start">
+            <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="text-blue-800 font-medium mb-1">
+                💡 После создания вы получите уникальную ссылку
+              </p>
+              <p class="text-blue-700 text-sm">
+                Отправьте её участникам — голосование работает без регистрации на любом устройстве
+              </p>
+            </div>
+          </div>
         </div>
       </form>
     </div>
@@ -132,14 +213,6 @@ const getMinDate = () => {
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
   return now.toISOString().slice(0, 16)
 }
-
-// Получить дату на завтра 18:00
-//const getTomorrowDate = () => {
-//  const tomorrow = new Date()
-//  tomorrow.setDate(tomorrow.getDate() + 1)
-//  tomorrow.setHours(18, 0, 0, 0)
-//  return tomorrow.toISOString().slice(0, 16)
-//}
 
 // Добавить новую дату (последняя + 1 день)
 const addDate = () => {
@@ -222,223 +295,5 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.event-create {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.header h1 {
-  margin: 0;
-  color: #333;
-}
-
-.back-link {
-  color: #666;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.back-link:hover {
-  color: #2196F3;
-}
-
-.form-container {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.event-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #333;
-}
-
-.hint {
-  font-size: 13px;
-  color: #666;
-  margin: 4px 0 12px 0;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-input:focus, textarea:focus {
-  outline: none;
-  border-color: #2196F3;
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
-}
-
-textarea {
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
-}
-
-.date-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-  align-items: center;
-}
-
-.date-input {
-  flex: 1;
-}
-
-.remove-date-btn {
-  background: #ff4444;
-  color: white;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.remove-date-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.remove-date-btn:not(:disabled):hover {
-  background: #ff2222;
-}
-
-.add-date-btn {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-.add-date-btn:hover {
-  background: #45a049;
-}
-
-.add-date-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.form-actions {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.submit-btn {
-  background: linear-gradient(135deg, #2196F3, #1976D2);
-  color: white;
-  border: none;
-  padding: 14px 28px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  flex: 1;
-}
-
-.submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1976D2, #1565C0);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
-}
-
-.submit-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.cancel-btn {
-  color: #666;
-  text-decoration: none;
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  text-align: center;
-}
-
-.cancel-btn:hover {
-  background: #f5f5f5;
-}
-
-.error-message {
-  background: #ffebee;
-  color: #c62828;
-  padding: 12px;
-  border-radius: 6px;
-  margin-top: 10px;
-  border-left: 4px solid #c62828;
-}
-
-.info-box {
-  background: #e8f4fd;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 20px;
-  border-left: 4px solid #2196F3;
-}
-
-.info-box p {
-  margin: 5px 0;
-  font-size: 14px;
-  color: #1976D2;
-}
-
-@media (max-width: 768px) {
-  .event-create {
-    padding: 15px;
-  }
-  
-  .form-container {
-    padding: 20px;
-  }
-  
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-  }
-  
-  .submit-btn, .cancel-btn {
-    width: 100%;
-  }
-}
+/* Все стили заменены на Tailwind классы */
 </style>

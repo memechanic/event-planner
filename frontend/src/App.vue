@@ -1,31 +1,88 @@
 <template>
-  <div id="app">
-    <nav class="navbar">
-      <div class="nav-container">
-        <router-link to="/" class="nav-brand">
-          🗓️ Event Planner
-        </router-link>
-        <div class="nav-links">
-          <router-link to="/">Главная</router-link>
-          <router-link to="/create">Создать событие</router-link>
-          <router-link to="/event/demo">Демо</router-link>
+  <div id="app" class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
+    <!-- Навигация -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Логотип -->
+          <router-link 
+            to="/" 
+            class="flex items-center space-x-3 hover:opacity-90 transition-opacity"
+          >
+            <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+              <span class="text-white text-lg font-bold">🗓️</span>
+            </div>
+            <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              Event Planner
+            </span>
+          </router-link>
+
+          <!-- Навигационные ссылки -->
+          <div class="flex items-center space-x-2 sm:space-x-4">
+            <router-link 
+              to="/" 
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <span class="hidden sm:inline">Главная</span>
+              <span class="sm:hidden">🏠</span>
+            </router-link>
+            
+            <router-link 
+              to="/create" 
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <span class="hidden sm:inline">Создать</span>
+              <span class="sm:hidden">➕</span>
+            </router-link>
+            
+            <router-link 
+              to="/event/demo" 
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <span class="hidden sm:inline">Демо</span>
+              <span class="sm:hidden">👁️</span>
+            </router-link>
+          </div>
         </div>
       </div>
     </nav>
     
-    <main class="main-content">
+    <!-- Основное содержимое -->
+    <main class="flex-grow container mx-auto px-4 py-6 sm:py-8">
       <router-view />
     </main>
     
-    <footer class="footer">
-      <div class="footer-content">
-        <p>© 2024 Event Planner. Проект для 24-часового хакатона.</p>
-        <p class="connection-status">
-          Статус соединения: 
-          <span :class="connectionClass">
-            {{ connectionStatus }}
-          </span>
-        </p>
+    <!-- Футер -->
+    <footer class="bg-gray-800 text-gray-300 mt-auto border-t border-gray-700">
+      <div class="container mx-auto px-4 py-6">
+        <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+          <p class="text-sm text-center md:text-left">
+            © 2024 Event Planner · Проект для 24-часового хакатона
+          </p>
+          
+          <div class="flex items-center space-x-3">
+            <span class="text-sm">Статус:</span>
+            <span 
+              :class="[
+                'px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-1.5',
+                isOnline 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-amber-100 text-amber-800'
+              ]"
+            >
+              <span 
+                :class="[
+                  'w-2 h-2 rounded-full',
+                  isOnline ? 'bg-green-500' : 'bg-amber-500'
+                ]"
+              ></span>
+              <span>{{ connectionStatus }}</span>
+            </span>
+          </div>
+        </div>
       </div>
     </footer>
   </div>
@@ -37,12 +94,10 @@ import { ref, onMounted, onUnmounted } from 'vue'
 // Статус соединения
 const isOnline = ref(navigator.onLine)
 const connectionStatus = ref(isOnline.value ? 'онлайн' : 'офлайн')
-const connectionClass = ref(isOnline.value ? 'online' : 'offline')
 
 const updateOnlineStatus = () => {
   isOnline.value = navigator.onLine
   connectionStatus.value = isOnline.value ? 'онлайн' : 'офлайн'
-  connectionClass.value = isOnline.value ? 'online' : 'offline'
   
   console.log(`Соединение: ${connectionStatus.value}`)
 }
@@ -59,116 +114,5 @@ onUnmounted(() => {
 </script>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  background: #f5f5f5;
-}
-
-#app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.navbar {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 60px;
-}
-
-.nav-brand {
-  font-size: 20px;
-  font-weight: bold;
-  color: #2196F3;
-  text-decoration: none;
-}
-
-.nav-links {
-  display: flex;
-  gap: 20px;
-}
-
-.nav-links a {
-  color: #666;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.nav-links a:hover {
-  color: #2196F3;
-}
-
-.nav-links a.router-link-active {
-  color: #2196F3;
-  font-weight: 600;
-}
-
-.main-content {
-  flex: 1;
-  padding: 20px;
-}
-
-.footer {
-  background: #333;
-  color: white;
-  padding: 20px;
-  text-align: center;
-}
-
-.footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.footer p {
-  margin: 5px 0;
-}
-
-.connection-status {
-  font-size: 14px;
-}
-
-.online {
-  color: #4CAF50;
-}
-
-.offline {
-  color: #ff9800;
-}
-
-@media (max-width: 768px) {
-  .nav-container {
-    flex-direction: column;
-    height: auto;
-    padding: 15px;
-  }
-  
-  .nav-brand {
-    margin-bottom: 10px;
-  }
-  
-  .main-content {
-    padding: 15px;
-  }
-}
+/* Убраны все встроенные стили - заменены на Tailwind классы */
 </style>
