@@ -23,7 +23,7 @@ content-type: application/json
 
 ### Просмотр события id сюда айди
 
-GET http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/ HTTP/1.1
+GET http://127.0.0.1:8000/api/events/ab85da9d-8be7-45e4-84d5-83b822fc8c9f/ HTTP/1.1
 content-type: application/json
 
 ### Создание участника
@@ -63,3 +63,10 @@ content-type: application/json
 ### Получение сообщений события
 GET  http://127.0.0.1:8000/api/events/ae85dc0f-b949-4e2a-98ff-dc361764b7d5/messages/ HTTP/1.1
 content-type: application/json
+
+### Получение списка ивентов для юзера
+
+GET http://127.0.0.1:8000/api/users/b794ddcc-6272-42d3-b26a-0e5a56468eff/events/ HTTP/1.1
+Content-Type: application/json
+
+###

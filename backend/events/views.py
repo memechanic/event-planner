@@ -66,3 +66,16 @@ class EventParticipantView(generics.ListCreateAPIView):
         event_id = self.kwargs['event_id']
         queryset = Participant.objects.filter(event_id=event_id)
         return queryset
+
+
+class UserEventsView(generics.ListAPIView):
+    serializer_class = EventDetailSerializer
+
+    def get_queryset(self) -> QuerySet[Event]:  #type:ignore Ошибка в типизации DRF
+        return Event.objects.filter(
+            event_user_id=self.kwargs['user_id']
+        ).prefetch_related(
+            'date_options',
+            'participants',
+            'messages'
+        )
