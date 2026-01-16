@@ -225,16 +225,22 @@ export const useEventStore = defineStore('event', {
         messages: [
           { 
             id: 1, 
-            text: 'Привет всем! Кто сможет прийти на встречу?', 
+            text: 'Привет всем! Кто придет?', 
             username: 'Анна', 
             created_at: new Date(now - 3600000 * 2).toISOString() 
           },
           { 
             id: 2, 
-            text: 'Я могу в среду или четверг', 
+            text: 'Гоу в среду или четверг', 
             username: 'Иван', 
             created_at: new Date(now - 3600000 * 1.5).toISOString() 
-          }
+          },
+          { 
+            id: 3, 
+            text: 'Я хз', 
+            username: 'Данил', 
+            created_at: new Date(now - 3600000 * 1).toISOString() 
+          },
         ],
         created_at: new Date().toISOString()
       }

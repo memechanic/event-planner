@@ -1,11 +1,14 @@
+<script> import ChatBox from "@/components/ChatBox.vue"; export default { components: { ChatBox } }; </script>
+
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+
     <!-- Загрузка -->
     <div v-if="loading" class="flex flex-col items-center justify-center py-20">
       <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
       <p class="text-lg font-medium text-gray-700">Загрузка события...</p>
     </div>
-    
+
     <!-- Ошибка -->
     <div v-else-if="error && (!event || !event.id)" class="text-center py-20">
       <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -17,187 +20,123 @@
       <p class="text-gray-600 mb-8">{{ error }}</p>
       <router-link 
         to="/" 
-        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-200"
+        class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all"
       >
         На главную
       </router-link>
     </div>
-    
-    <!-- Контент события -->
+
+    <!-- Контент -->
     <div v-else-if="event" class="space-y-8">
-      <!-- Заголовок -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
-        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-          <div class="flex-1">
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-3">
-              {{ event.title }}
-            </h1>
-            <div class="flex flex-wrap items-center gap-4 mb-4">
-              <span class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Создано: {{ formatDate(event.created_at) }}
-              </span>
-              <span class="inline-flex items-center px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-7.5a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zM6.75 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"/>
-                </svg>
-                Участники: {{ uniqueParticipants.length }}
-              </span>
+
+      <!-- HEADER -->
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between">
+        <div class="flex-1">
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ event.title }}</h1>
+          <p class="text-gray-600">{{ event.description || 'Нет описания' }}</p>
+          <div class="flex gap-4 text-sm text-gray-500 mt-3">
+            <span>{{ dates.length }} вариантов дат</span>
+            <span>{{ uniqueParticipants.length }} участников</span>
+            <span>{{ eventStore.votes?.length || 0 }} голосов</span>
+          </div>
+        </div>
+
+        <button class="mt-4 md:mt-0 px-5 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700">
+          Пригласить
+        </button>
+      </div>
+
+      <!-- GRID: Vote + Chat -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- VOTE SECTION -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow p-6 border">
+          <div class="flex items-center mb-4">
+            <span class="text-2xl mr-2">📋</span>
+            <h2 class="text-xl font-semibold text-gray-800">Голосование за даты</h2>
+          </div>
+
+          <div class="space-y-4">
+            <div 
+              v-for="date in dates"
+              :key="date"
+              @click="selectDate(date)"
+              class="border rounded-xl p-4 cursor-pointer hover:border-green-400 transition"
+              :class="selectedDate === date ? 'bg-green-50 border-green-500' : 'border-gray-200'"
+            >
+              <div class="flex justify-between">
+                <div>
+                  <div class="font-medium text-gray-800">{{ formatDateTime(date) }}</div>
+                  <div class="text-sm text-gray-600">
+                    {{ (votesByDate[date] || []).length }} голосов
+                  </div>
+                </div>
+                <div v-if="selectedDate === date" class="text-green-600">
+                  ✔
+                </div>
+              </div>
             </div>
-            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
-              <p class="text-gray-700 leading-relaxed">
-                {{ event.description || 'Нет описания' }}
-              </p>
-            </div>
+          </div>
+
+          <button
+            class="mt-6 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl disabled:bg-gray-300"
+            :disabled="!selectedDate || voting"
+            @click="submitVote"
+          >
+            {{ voting ? 'Голосую...' : 'Проголосовать' }}
+          </button>
+        </div>
+
+        <!-- CHAT -->
+        <div class="bg-white rounded-xl shadow p-6 border flex flex-col">
+          <div class="flex items-center mb-3">
+            <span class="text-xl mr-2">💬</span>
+            <h2 class="text-lg font-semibold text-gray-800">Чат события</h2>
+          </div>
+
+          <ChatBox />
+        </div>
+
+      </div>
+
+      <!-- PARTICIPANTS -->
+      <div class="bg-white rounded-xl shadow p-6 border">
+        <div class="flex items-center mb-3">
+          <span class="text-xl mr-2">👥</span>
+          <h2 class="text-lg font-semibold text-gray-800">Участники</h2>
+        </div>
+
+        <div class="flex flex-wrap gap-3 mt-3">
+          <div v-for="p in uniqueParticipants" :key="p" class="px-4 py-2 border rounded-xl bg-gray-50 text-gray-800">
+            {{ p }}
           </div>
         </div>
       </div>
-      
-      <!-- Даты для голосования -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
-        <div class="flex items-center mb-6">
-          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-            <span class="text-white text-lg">📋</span>
-          </div>
-          <h2 class="text-2xl font-bold text-gray-800">Варианты дат</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <div 
-            v-for="date in dates" 
-            :key="date" 
-            class="date-card"
-            :class="[
-              'bg-white border-2 rounded-xl p-5 cursor-pointer transition-all duration-200 hover:shadow-md',
-              selectedDate === date 
-                ? 'border-green-500 bg-green-50' 
-                : 'border-gray-200 hover:border-green-300'
-            ]"
-            @click="selectDate(date)"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <div class="text-lg font-semibold text-gray-800 mb-2">
-                  {{ formatDateTime(date) }}
-                </div>
-                <div class="flex items-center flex-wrap gap-3">
-                  <span class="inline-flex items-center px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                    👍 {{ (votesByDate[date] || []).length }} голосов
-                  </span>
-                  <span v-if="votesByDate[date] && votesByDate[date].length > 0" class="text-sm text-gray-600">
-                    {{ votesByDate[date].join(', ') }}
-                  </span>
-                </div>
-              </div>
-              <div v-if="selectedDate === date" class="text-green-600 ml-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="mt-8 pt-6 border-t border-gray-100">
-          <button 
-            @click="submitVote" 
-            :disabled="!selectedDate || voting"
-            class="w-full py-4 px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow"
-          >
-            <span v-if="voting" class="flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Голосую...
-            </span>
-            <span v-else class="flex items-center justify-center">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              Проголосовать
-            </span>
+
+      <!-- LINK -->
+      <div class="bg-white rounded-xl shadow p-6 border">
+        <h2 class="text-lg font-semibold mb-3 flex items-center">
+          <span class="mr-2 text-xl">🔗</span> Ссылка для приглашения
+        </h2>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input :value="eventUrl" readonly class="flex-1 p-3 rounded-xl border bg-gray-50" />
+          <button @click="copyLink" class="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+            {{ copied ? 'Скопировано!' : 'Копировать' }}
           </button>
         </div>
       </div>
-      
-      <!-- Участники -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
-        <div class="flex items-center mb-6">
-          <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-            <span class="text-white text-lg">👥</span>
-          </div>
-          <h2 class="text-2xl font-bold text-gray-800">Участники</h2>
-        </div>
-        
-        <div class="flex flex-wrap gap-3">
-          <span
-            v-for="participant in uniqueParticipants"
-            :key="participant"
-            class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 text-gray-800 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
-          >
-            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-            {{ participant }}
-          </span>
-        </div>
-      </div>
-      
-      <!-- Ссылка для приглашения -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
-        <div class="flex items-center mb-6">
-          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-            <span class="text-white text-lg">🔗</span>
-          </div>
-          <h2 class="text-2xl font-bold text-gray-800">Ссылка для приглашения</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <div class="flex flex-col sm:flex-row gap-3">
-            <input 
-              :value="eventUrl" 
-              readonly 
-              class="flex-1 px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none"
-            />
-            <button 
-              @click="copyLink" 
-              :class="[
-                'px-6 py-3.5 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center',
-                copied 
-                  ? 'bg-green-100 text-green-800 border border-green-200' 
-                  : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:shadow-lg'
-              ]"
-            >
-              <span v-if="copied" class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                Скопировано!
-              </span>
-              <span v-else class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-                Копировать
-              </span>
-            </button>
-          </div>
-          <p class="text-sm text-gray-500">
-            Отправьте эту ссылку друзьям или коллегам, чтобы они могли проголосовать
-          </p>
-        </div>
-      </div>
+
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useEventStore } from '@/stores/event'
+
 
 const route = useRoute()
 const eventStore = useEventStore()
