@@ -16,36 +16,6 @@
               Event Planner
             </span>
           </router-link>
-
-          <!-- Навигационные ссылки -->
-          <!-- <div class="flex items-center space-x-2 sm:space-x-4">
-            <router-link 
-              to="/" 
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
-              active-class="bg-blue-100 text-blue-700"
-            >
-              <span class="hidden sm:inline">Главная</span>
-              <span class="sm:hidden">🏠</span>
-            </router-link>
-            
-            <router-link 
-              to="/create" 
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
-              active-class="bg-blue-100 text-blue-700"
-            >
-              <span class="hidden sm:inline">Создать</span>
-              <span class="sm:hidden">➕</span>
-            </router-link>
-            
-            <router-link 
-              to="/event/demo" 
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
-              active-class="bg-blue-100 text-blue-700"
-            >
-              <span class="hidden sm:inline">Демо</span>
-              <span class="sm:hidden">👁️</span>
-            </router-link>
-          </div> -->
           <div class="flex items-center space-x-2 sm:space-x-4">
             <!-- Основные ссылки -->
             <router-link 
@@ -66,14 +36,14 @@
               <span class="sm:hidden">➕</span>
             </router-link>
             
-            <router-link 
+            <!-- <router-link 
               to="/event/demo" 
               class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
               active-class="bg-blue-100 text-blue-700"
             >
               <span class="hidden sm:inline">Демо</span>
               <span class="sm:hidden">👁️</span>
-            </router-link>
+            </router-link> -->
 
             <!-- Кнопка авторизации / выхода -->
             <button
@@ -106,31 +76,9 @@
     <!-- Футер -->
     <footer class="bg-gray-800 text-gray-300 mt-auto border-t border-gray-700">
       <div class="container mx-auto px-4 py-6">
-        <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-          <p class="text-sm text-center md:text-left">
-            © 2024 Event Planner · Проект для 24-часового хакатона
-          </p>
-          
-          <div class="flex items-center space-x-3">
-            <span class="text-sm">Статус:</span>
-            <span 
-              :class="[
-                'px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-1.5',
-                isOnline 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-amber-100 text-amber-800'
-              ]"
-            >
-              <span 
-                :class="[
-                  'w-2 h-2 rounded-full',
-                  isOnline ? 'bg-green-500' : 'bg-amber-500'
-                ]"
-              ></span>
-              <span>{{ connectionStatus }}</span>
-            </span>
-          </div>
-        </div>
+        <p class="text-sm text-center">
+          © 2024 Event Planner
+        </p>
       </div>
     </footer>
   </div>
