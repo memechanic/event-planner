@@ -17,6 +17,10 @@ export const useEventStore = defineStore('event', {
       
       try {
         console.log('📝 Создание события:', eventData)
+
+        if (!eventData?.event_user) {
+          throw new Error('Для создания события требуется авторизация')
+        }
         
         // 1. Пробуем отправить на Django бэкенд
         try {

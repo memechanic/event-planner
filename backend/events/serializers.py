@@ -8,27 +8,53 @@ class DateOptionSerializer(serializers.ModelSerializer):
         fields = ('id', 'date')
 
 
-class EventUserGetOrCreateSerializer(serializers.ModelSerializer):
+class EventUserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventUser
         fields = ('id', 'username', 'email')
         read_only_fields = ('id',)
 
+    def validate(self, attrs):
+        email = attrs['email']
+        username = attrs['username']
+
+        if EventUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError({
+                'email': 'Пользователь с таким email уже существует.'
+            })
+
+        if EventUser.objects.filter(username=username).exists():
+            raise serializers.ValidationError({
+                'username': 'Это имя уже занято другим пользователем.'
+            })
+
+        return attrs
+
     def create(self, validated_data):
-        email = validated_data['email']
-        username = validated_data['username']
+        return EventUser.objects.create(**validated_data)
 
-        user, created = EventUser.objects.get_or_create(
-            email=email,
-            defaults={'username': username}
-        )
 
-        # если пользователь уже был — можно обновить username
-        if not created and user.username != username:
-            user.username = username
-            user.save(update_fields=['username'])
+class EventUserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100)
+    email = serializers.EmailField(max_length=100)
 
-        return user
+    def validate(self, attrs):
+        email = attrs['email']
+        username = attrs['username']
+        user = EventUser.objects.filter(email=email).first()
+
+        if not user:
+            raise serializers.ValidationError({
+                'email': 'Пользователь с таким email не найден.'
+            })
+
+        if user.username != username:
+            raise serializers.ValidationError({
+                'username': 'Неверное имя пользователя для указанного email.'
+            })
+
+        attrs['user'] = user
+        return attrs
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
@@ -64,6 +90,18 @@ class EventDetailSerializer(serializers.ModelSerializer):
             'date_options',
             'participants',
             'messages',
+        )
+
+
+class EventListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = (
+            'id',
+            'event_user',
+            'title',
+            'description',
+            'created_at',
         )
 
 

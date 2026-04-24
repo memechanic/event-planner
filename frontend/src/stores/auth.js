@@ -1,5 +1,6 @@
 // src/stores/auth.js
 import { defineStore } from 'pinia'
+import api from '@/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -7,6 +8,52 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   actions: {
+    normalizeCredentials(credentials) {
+      const payload = {
+        username: credentials?.username?.trim(),
+        email: credentials?.email?.trim(),
+      }
+
+      if (!payload.username || !payload.email) {
+        throw new Error('Имя и email обязательны')
+      }
+      return payload
+    },
+
+    extractAuthError(error, fallbackMessage) {
+      return (
+        error?.response?.data?.username?.[0] ||
+        error?.response?.data?.email?.[0] ||
+        error?.response?.data?.detail ||
+        error?.message ||
+        fallbackMessage
+      )
+    },
+
+    async login(credentials) {
+      const payload = this.normalizeCredentials(credentials)
+
+      try {
+        const response = await api.post('/auth/login/', payload)
+        this.setUser(response.data)
+        return response.data
+      } catch (error) {
+        throw new Error(this.extractAuthError(error, 'Не удалось выполнить вход'))
+      }
+    },
+
+    async register(credentials) {
+      const payload = this.normalizeCredentials(credentials)
+
+      try {
+        const response = await api.post('/auth/register/', payload)
+        this.setUser(response.data)
+        return response.data
+      } catch (error) {
+        throw new Error(this.extractAuthError(error, 'Не удалось выполнить регистрацию'))
+      }
+    },
+
     setUser(userData) {
       this.user = userData
       // Сохраняем в localStorage для перезагрузки страницы

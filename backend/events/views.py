@@ -7,10 +7,12 @@ from .models import Event, Participant, Vote, Message
 from .serializers import (
     EventCreateSerializer,
     EventDetailSerializer,
+    EventListSerializer,
     VoteSerializer,
     MessageSerializer,
     ParticipantSerializer,
-    EventUserGetOrCreateSerializer
+    EventUserRegisterSerializer,
+    EventUserLoginSerializer,
     )
 
 
@@ -24,8 +26,35 @@ class EventDetailView(generics.RetrieveAPIView):
     serializer_class = EventDetailSerializer
     lookup_field = 'id'
 
-class EventUserGetOrCreateView(generics.CreateAPIView):
-    serializer_class = EventUserGetOrCreateSerializer
+
+class EventListView(generics.ListAPIView):
+    serializer_class = EventListSerializer
+
+    def get_queryset(self) -> QuerySet[Event]:  #type:ignore Ошибка в типизации DRF
+        return Event.objects.select_related('event_user').order_by('-created_at')
+
+
+class EventDeleteView(generics.DestroyAPIView):
+    queryset = Event.objects.all()
+    lookup_field = 'id'
+
+
+class EventUserRegisterView(generics.CreateAPIView):
+    serializer_class = EventUserRegisterSerializer
+
+
+class EventUserLoginView(generics.GenericAPIView):
+    serializer_class = EventUserLoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+        }, status=status.HTTP_200_OK)
 
 class VoteCreateView(generics.CreateAPIView):
     serializer_class = VoteSerializer

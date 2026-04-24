@@ -236,6 +236,11 @@ const handleSubmit = async () => {
     alert('Заполните название и все даты')
     return
   }
+  if (!authStore.userId) {
+    alert('Сначала войдите в аккаунт, чтобы создать событие')
+    router.push('/login')
+    return
+  }
   const processedDates = dates.value.map(dateStr => {
     try {
       // input[type="datetime-local"] возвращает строку в формате "YYYY-MM-DDTHH:mm"
