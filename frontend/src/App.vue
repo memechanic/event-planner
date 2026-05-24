@@ -45,24 +45,37 @@
               <span class="sm:hidden">👁️</span>
             </router-link> -->
 
-            <!-- Кнопка авторизации / выхода -->
-            <button
-              v-if="authStore.isAuthenticated"
-              @click="logout"
-              class="px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <span class="hidden sm:inline">Выйти</span>
-              <span class="sm:hidden">🚪</span>
-            </button>
+            <!-- Авторизован: имя + выход -->
+            <template v-if="authStore.isAuthenticated">
+              <span class="hidden sm:inline text-sm text-gray-600 font-medium px-2">
+                👤 {{ authStore.user.username }}
+              </span>
+              <button
+                @click="logout"
+                class="px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <span class="hidden sm:inline">Выйти</span>
+                <span class="sm:hidden">🚪</span>
+              </button>
+            </template>
 
-            <router-link
-              v-else
-              to="/login"
-              class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-            >
-              <span class="hidden sm:inline">Войти</span>
-              <span class="sm:hidden">🔑</span>
-            </router-link>
+            <!-- Гость: войти + регистрация -->
+            <template v-else>
+              <router-link
+                to="/login"
+                class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+              >
+                <span class="hidden sm:inline">Войти</span>
+                <span class="sm:hidden">🔑</span>
+              </router-link>
+              <router-link
+                to="/register"
+                class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                <span class="hidden sm:inline">Регистрация</span>
+                <span class="sm:hidden">📋</span>
+              </router-link>
+            </template>
           </div>
         </div>
       </div>

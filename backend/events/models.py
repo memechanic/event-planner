@@ -4,9 +4,21 @@ import uuid
 
 
 class EventUser(models.Model):
+    ROLE_USER = 'user'
+    ROLE_ADMIN = 'admin'
+    ROLE_CHOICES = [
+        (ROLE_USER, 'Пользователь'),
+        (ROLE_ADMIN, 'Администратор'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True)
+    password = models.CharField(max_length=128)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_USER)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    is_authenticated = True
 
 
 class Event(models.Model):

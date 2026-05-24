@@ -1,48 +1,75 @@
 <!-- src/views/LoginView.vue -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-    <div class="w-full max-w-md">
-      <h1 class="text-2xl font-bold text-center mb-6">Вход и регистрация</h1>
-      <form class="space-y-4">
+  <div class="min-h-[80vh] flex items-center justify-center bg-gray-50 p-4">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+      <!-- Заголовок -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-100 mb-4">
+          <span class="text-3xl">🔑</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">Вход в аккаунт</h1>
+        <p class="text-sm text-gray-500 mt-1">Нет аккаунта?
+          <router-link to="/register" class="text-blue-600 hover:underline font-medium">
+            Зарегистрироваться
+          </router-link>
+        </p>
+      </div>
+
+      <form @submit.prevent="submit" class="space-y-5">
+        <!-- Имя пользователя -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Имя</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Имя пользователя</label>
           <input
             v-model="username"
             type="text"
+            autocomplete="username"
             required
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Ваше имя"
+            placeholder="Ваш логин"
+            class="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500
+                   transition-colors"
+            :class="{ 'border-red-400': error }"
           />
         </div>
+
+        <!-- Пароль -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            v-model="email"
-            type="email"
-            required
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="example@email.com"
-          />
+          <label class="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
+          <div class="relative">
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              required
+              placeholder="••••••••"
+              class="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500
+                     transition-colors pr-11"
+              :class="{ 'border-red-400': error }"
+            />
+            <button
+              type="button"
+              tabindex="-1"
+              @click="showPassword = !showPassword"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
-          :disabled="loading"
-          @click="submitAuth('login')"
-        >
-          {{ loading && actionType === 'login' ? 'Загрузка...' : 'Войти' }}
-        </button>
-        <button
-          type="button"
-          class="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700 transition"
-          :disabled="loading"
-          @click="submitAuth('register')"
-        >
-          {{ loading && actionType === 'register' ? 'Загрузка...' : 'Зарегистрироваться' }}
-        </button>
-        <p v-if="errorMessage" class="text-sm text-red-600">
-          {{ errorMessage }}
+
+        <!-- Ошибка -->
+        <p v-if="error" class="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          {{ error }}
         </p>
+
+        <!-- Кнопка -->
+        <button
+          type="submit"
+          :disabled="loading"
+          class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold
+                 py-2.5 rounded-xl transition-colors"
+        >
+          {{ loading ? 'Выполняется вход...' : 'Войти' }}
+        </button>
       </form>
     </div>
   </div>
@@ -53,38 +80,25 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const username = ref('')
-const email = ref('')
-const loading = ref(false)
-const actionType = ref('')
-const errorMessage = ref('')
 const router = useRouter()
 const authStore = useAuthStore()
 
-const submitAuth = async (type) => {
-  actionType.value = type
+const username = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const loading = ref(false)
+const error = ref('')
+
+const submit = async () => {
+  error.value = ''
   loading.value = true
-  errorMessage.value = ''
-
-  const payload = {
-    username: username.value,
-    email: email.value
-  }
-
   try {
-    if (type === 'register') {
-      await authStore.register(payload)
-    } else {
-      await authStore.login(payload)
-    }
-
-    router.push('/') // или '/my-events', если есть отдельная страница
-  } catch (error) {
-    console.error('Login error:', error)
-    errorMessage.value = error.message || 'Не удалось выполнить запрос.'
+    await authStore.login({ username: username.value, password: password.value })
+    router.push('/')
+  } catch (e) {
+    error.value = e.message
   } finally {
     loading.value = false
-    actionType.value = ''
   }
 }
 </script>

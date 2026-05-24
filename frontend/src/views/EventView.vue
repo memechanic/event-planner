@@ -1,5 +1,3 @@
-<script> import ChatBox from "@/components/ChatBox.vue"; export default { components: { ChatBox } }; </script>
-
 <template>
   <div class="max-w-7xl mx-auto px-4 py-8">
 
@@ -18,8 +16,8 @@
       </div>
       <h2 class="text-2xl font-bold text-gray-800 mb-2">Ошибка загрузки</h2>
       <p class="text-gray-600 mb-8">{{ error }}</p>
-      <router-link 
-        to="/" 
+      <router-link
+        to="/"
         class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all"
       >
         На главную
@@ -35,13 +33,15 @@
           <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ event.title }}</h1>
           <p class="text-gray-600">{{ event.description || 'Нет описания' }}</p>
           <div class="flex gap-4 text-sm text-gray-500 mt-3">
-            <span>{{ dates.length }} вариантов дат</span>
+            <span>{{ dateOptions.length }} вариантов дат</span>
             <span>{{ uniqueParticipants.length }} участников</span>
-            <span>{{ eventStore.votes?.length || 0 }} голосов</span>
           </div>
         </div>
 
-        <button class="mt-4 md:mt-0 px-5 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700">
+        <button
+          @click="scrollToLink"
+          class="mt-4 md:mt-0 px-5 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700"
+        >
           Пригласить
         </button>
       </div>
@@ -57,44 +57,42 @@
           </div>
 
           <div class="space-y-4">
-            <div 
-              v-for="date in dates"
-              :key="date"
-              @click="selectDate(date)"
+            <div
+              v-for="option in dateOptions"
+              :key="option.id"
+              @click="selectOption(option)"
               class="border rounded-xl p-4 cursor-pointer hover:border-green-400 transition"
-              :class="selectedDate === date ? 'bg-green-50 border-green-500' : 'border-gray-200'"
+              :class="selectedOptionId === option.id ? 'bg-green-50 border-green-500' : 'border-gray-200'"
             >
-              <div class="flex justify-between">
+              <div class="flex justify-between items-center">
                 <div>
-                  <div class="font-medium text-gray-800">{{ formatDateTime(date) }}</div>
-                  <div class="text-sm text-gray-600">
-                    {{ (votesByDate[date] || []).length }} голосов
-                  </div>
+                  <div class="font-medium text-gray-800">{{ formatDateTime(option.date) }}</div>
+                  <div class="text-sm text-gray-500 mt-1">{{ option.vote_count ?? 0 }} голосов</div>
                 </div>
-                <div v-if="selectedDate === date" class="text-green-600">
-                  ✔
-                </div>
+                <div v-if="selectedOptionId === option.id" class="text-green-600 text-xl">✔</div>
               </div>
             </div>
           </div>
 
+          <div v-if="voteError" class="mt-3 text-sm text-red-600">{{ voteError }}</div>
+          <div v-if="voteSuccess" class="mt-3 text-sm text-green-600">Голос принят!</div>
+
           <button
-            class="mt-6 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl disabled:bg-gray-300"
-            :disabled="!selectedDate || voting"
+            class="mt-6 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition"
+            :disabled="!selectedOptionId || voting"
             @click="submitVote"
           >
             {{ voting ? 'Голосую...' : 'Проголосовать' }}
           </button>
         </div>
 
-        <!-- CHAT -->
+        <!-- CHAT (заглушка до реализации) -->
         <div class="bg-white rounded-xl shadow p-6 border flex flex-col">
           <div class="flex items-center mb-3">
             <span class="text-xl mr-2">💬</span>
             <h2 class="text-lg font-semibold text-gray-800">Чат события</h2>
           </div>
-
-          <ChatBox />
+          <p class="text-sm text-gray-400 mt-auto text-center">Чат будет доступен в следующей версии</p>
         </div>
 
       </div>
@@ -103,25 +101,33 @@
       <div class="bg-white rounded-xl shadow p-6 border">
         <div class="flex items-center mb-3">
           <span class="text-xl mr-2">👥</span>
-          <h2 class="text-lg font-semibold text-gray-800">Участники</h2>
+          <h2 class="text-lg font-semibold text-gray-800">
+            Участники
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ uniqueParticipants.length }})</span>
+          </h2>
         </div>
 
-        <div class="flex flex-wrap gap-3 mt-3">
-          <div v-for="p in uniqueParticipants" :key="p" class="px-4 py-2 border rounded-xl bg-gray-50 text-gray-800">
-            {{ p }}
+        <div v-if="uniqueParticipants.length" class="flex flex-wrap gap-3 mt-3">
+          <div
+            v-for="name in uniqueParticipants"
+            :key="name"
+            class="px-4 py-2 border rounded-xl bg-gray-50 text-gray-800"
+          >
+            {{ name }}
           </div>
         </div>
+        <p v-else class="text-sm text-gray-400 mt-2">Пока нет участников. Поделитесь ссылкой!</p>
       </div>
 
-      <!-- LINK -->
-      <div class="bg-white rounded-xl shadow p-6 border">
+      <!-- INVITE LINK -->
+      <div ref="linkSection" class="bg-white rounded-xl shadow p-6 border">
         <h2 class="text-lg font-semibold mb-3 flex items-center">
           <span class="mr-2 text-xl">🔗</span> Ссылка для приглашения
         </h2>
 
         <div class="flex flex-col sm:flex-row gap-3">
-          <input :value="eventUrl" readonly class="flex-1 p-3 rounded-xl border bg-gray-50" />
-          <button @click="copyLink" class="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+          <input :value="eventUrl" readonly class="flex-1 p-3 rounded-xl border bg-gray-50 text-sm" />
+          <button @click="copyLink" class="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition whitespace-nowrap">
             {{ copied ? 'Скопировано!' : 'Копировать' }}
           </button>
         </div>
@@ -131,113 +137,84 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useEventStore } from '@/stores/event'
 
-
 const route = useRoute()
 const eventStore = useEventStore()
 
-// Данные
-const selectedDate = ref(null)
+const selectedOptionId = ref(null)
 const voting = ref(false)
+const voteError = ref('')
+const voteSuccess = ref(false)
 const copied = ref(false)
+const linkSection = ref(null)
 
-// Вычисляемые свойства
 const event = computed(() => eventStore.currentEvent)
 const loading = computed(() => eventStore.loading)
 const error = computed(() => eventStore.error)
-const votesByDate = computed(() => eventStore.votesByDate || {})
-const uniqueParticipants = computed(() => eventStore.uniqueParticipants || [])
+const uniqueParticipants = computed(() => eventStore.uniqueParticipants)
 
-const dates = computed(() => {
-  return event.value?.date_options?.map(d => d.date) || []
-})
+const dateOptions = computed(() => event.value?.date_options ?? [])
 
-// URL события
-const eventUrl = computed(() => {
-  if (!event.value?.id) return ''
-  return `${window.location.origin}/event/${event.value.id}`
-})
+const eventUrl = computed(() =>
+  event.value?.id ? `${window.location.origin}/event/${event.value.id}` : ''
+)
 
-// Загрузка события
-onMounted(() => {
-  loadEvent()
-})
-
-watch(() => route.params.id, () => {
-  loadEvent()
-})
+onMounted(() => loadEvent())
+watch(() => route.params.id, () => loadEvent())
 
 const loadEvent = async () => {
-  const eventId = route.params.id
-  console.log('Загрузка события ID:', eventId)
-  
-  if (eventId) {
-    await eventStore.getEvent(eventId)
-    
-    // Если это демо или новое событие, выбираем первую дату
-    // if (event.value && event.value.dates?.length > 0 && !selectedDate.value) {
-    //   selectedDate.value = event.value.dates[0]
-    // }
-    if (dates.value.length > 0 && !selectedDate.value) {
-      selectedDate.value = dates.value[0]
-    }
+  if (!route.params.id) return
+  selectedOptionId.value = null
+  await eventStore.getEvent(route.params.id)
+  if (dateOptions.value.length > 0) {
+    selectedOptionId.value = dateOptions.value[0].id
   }
 }
 
-// Выбор даты
-const selectDate = (date) => {
-  selectedDate.value = date
+const selectOption = (option) => {
+  selectedOptionId.value = option.id
 }
 
-// Голосование
 const submitVote = async () => {
-  if (!selectedDate.value || !event.value?.id) return
-  
+  if (!selectedOptionId.value || !event.value?.id) return
   voting.value = true
+  voteError.value = ''
+  voteSuccess.value = false
   try {
-    await eventStore.voteForEvent(event.value.id, selectedDate.value)
-    console.log('✅ Голос принят')
+    await eventStore.voteForEvent(event.value.id, selectedOptionId.value)
+    voteSuccess.value = true
+    setTimeout(() => { voteSuccess.value = false }, 3000)
   } catch (err) {
-    console.error('Ошибка голосования:', err)
+    voteError.value = err.message || 'Ошибка голосования'
   } finally {
     voting.value = false
   }
 }
 
-// Копирование ссылки
+const scrollToLink = () => {
+  linkSection.value?.scrollIntoView({ behavior: 'smooth' })
+}
+
 const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(eventUrl.value)
     copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 2000)
-  } catch (err) {
-    console.error('Ошибка копирования:', err)
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // fallback
   }
 }
 
-// Форматирование дат
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('ru-RU')
-}
-
-const formatDateTime = (dateString) => {
-  return new Date(dateString).toLocaleString('ru-RU', {
+const formatDateTime = (dateString) =>
+  new Date(dateString).toLocaleString('ru-RU', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
-}
 </script>
-
-<style scoped>
-/* Все стили заменены на Tailwind классы */
-</style>

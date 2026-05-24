@@ -268,7 +268,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import { api } from '@/api'
@@ -280,15 +280,7 @@ const authStore = useAuthStore()
 
 const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-const fallbackDemoEvents = [
-  { id: 1, date: '2026-04-26', title: 'Созвон по проекту', time: '10:00 - 10:30' },
-  { id: 2, date: '2026-04-26', title: 'Обед с командой', time: '13:00 - 14:00' },
-  { id: 3, date: '2026-04-29', title: 'Демо для клиента', time: '16:30 - 17:00' },
-  { id: 4, date: '2026-05-03', title: 'Планирование спринта', time: '11:00 - 12:00' },
-  { id: 5, date: '2026-05-05', title: 'Ретроспектива', time: '17:00 - 17:45' },
-]
-
-const calendarEvents = ref([...fallbackDemoEvents])
+const calendarEvents = ref([])
 const userEvents = ref([])
 const eventsLoading = ref(false)
 const eventsError = ref('')
@@ -367,7 +359,7 @@ const loadUserCalendarEvents = async () => {
 
   if (!authStore.userId) {
     userEvents.value = []
-    calendarEvents.value = [...fallbackDemoEvents]
+    calendarEvents.value = []
     return
   }
 
@@ -413,6 +405,10 @@ const deleteUserEvent = async (eventId) => {
 }
 
 onMounted(() => {
+  loadUserCalendarEvents()
+})
+
+watch(() => authStore.userId, () => {
   loadUserCalendarEvents()
 })
 </script>
