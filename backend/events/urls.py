@@ -1,10 +1,12 @@
-from django.urls import path
+﻿from django.urls import path
 from .views import (
     EventCreateView,
     EventListView,
     EventDeleteView,
     EventDetailView,
     VoteCreateView,
+    DateOptionCreateView,
+    JoinEventView,
     EventMessagesView,
     EventParticipantView,
     EventUserRegisterView,
@@ -27,6 +29,9 @@ urlpatterns = [
     path('events/<uuid:event_id>/messages/', EventMessagesView.as_view()),
     path('events/<uuid:event_id>/participants/', EventParticipantView.as_view()),
     path('events/<uuid:event_id>/votes/', VoteCreateView.as_view()),
+    path('events/<uuid:event_id>/dates/', DateOptionCreateView.as_view()),
+
+    path('events/<uuid:event_id>/join/', JoinEventView.as_view()),
 
     # Users
     path('users/<uuid:user_id>/events/', UserEventsView.as_view()),

@@ -28,8 +28,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Если 401 и ещё не пробовали refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Если 401/403 с auth-ошибкой и ещё не пробовали refresh
+    const isAuthError = error.response?.status === 401 ||
+      (error.response?.status === 403 && error.response?.data?.detail &&
+        (error.response.data.detail.includes('токен') ||
+         error.response.data.detail.includes('Токен') ||
+         error.response.data.detail.includes('credentials')))
+    if (isAuthError && !originalRequest._retry) {
       originalRequest._retry = true
       const refresh = localStorage.getItem('refresh_token')
 

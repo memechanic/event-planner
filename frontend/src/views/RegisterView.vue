@@ -1,4 +1,4 @@
-<!-- src/views/RegisterView.vue -->
+﻿<!-- src/views/RegisterView.vue -->
 <template>
   <div class="min-h-[80vh] flex items-center justify-center bg-gray-50 p-4">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
@@ -116,10 +116,11 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const form = ref({ username: '', email: '', password: '', password2: '' })
@@ -167,7 +168,7 @@ const submit = async () => {
       password: form.value.password,
       password2: form.value.password2,
     })
-    router.push('/')
+    router.push(route.query.redirect || '/')
   } catch (e) {
     // Пробуем разбить на поля
     const msg = e.message || ''
@@ -180,3 +181,4 @@ const submit = async () => {
   }
 }
 </script>
+

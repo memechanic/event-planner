@@ -154,6 +154,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'event_user', 'title', 'description', 'dates')
+        read_only_fields = ('event_user',)
 
     def create(self, validated_data):
         dates = validated_data.pop('dates')

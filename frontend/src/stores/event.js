@@ -3,6 +3,7 @@ import { api } from '../api'
 
 export const useEventStore = defineStore('event', {
   state: () => ({
+    currentUser: null,
     currentEvent: null,
     loading: false,
     error: null,
@@ -39,11 +40,27 @@ export const useEventStore = defineStore('event', {
       }
     },
 
+    async joinEvent(eventId) {
+      const response = await api.post(`/events/${eventId}/join/`, {})
+      await this.getEvent(eventId)
+      return response.data
+    },
+
+    async leaveEvent(eventId) {
+      await api.delete(`/events/${eventId}/join/`)
+      await this.getEvent(eventId)
+    },
+
+    async proposeDate(eventId, dateStr) {
+      const response = await api.post(`/events/${eventId}/dates/`, { date: dateStr })
+      await this.getEvent(eventId)
+      return response.data
+    },
+
     async voteForEvent(eventId, dateOptionId) {
       const response = await api.post(`/events/${eventId}/votes/`, {
         date_option_id: dateOptionId,
       })
-      // Перезагружаем событие, чтобы обновить vote_count
       await this.getEvent(eventId)
       return response.data
     },
@@ -55,7 +72,11 @@ export const useEventStore = defineStore('event', {
   },
 
   getters: {
-    // { dateOptionId: voteCount }
+    isMember: (state) => (userId) => {
+      if (!userId || !state.currentEvent?.participants) return false
+      return state.currentEvent.participants.some(p => p.event_user === userId)
+    },
+
     votesByDateOptionId: (state) => {
       if (!state.currentEvent?.date_options) return {}
       return Object.fromEntries(

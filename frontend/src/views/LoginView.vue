@@ -1,4 +1,4 @@
-<!-- src/views/LoginView.vue -->
+﻿<!-- src/views/LoginView.vue -->
 <template>
   <div class="min-h-[80vh] flex items-center justify-center bg-gray-50 p-4">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
@@ -77,10 +77,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const username = ref('')
@@ -94,7 +95,7 @@ const submit = async () => {
   loading.value = true
   try {
     await authStore.login({ username: username.value, password: password.value })
-    router.push('/')
+    router.push(route.query.redirect || '/')
   } catch (e) {
     error.value = e.message
   } finally {
@@ -102,3 +103,4 @@ const submit = async () => {
   }
 }
 </script>
+

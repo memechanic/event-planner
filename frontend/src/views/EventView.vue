@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="max-w-7xl mx-auto px-4 py-8">
 
     <!-- Загрузка -->
@@ -16,10 +16,7 @@
       </div>
       <h2 class="text-2xl font-bold text-gray-800 mb-2">Ошибка загрузки</h2>
       <p class="text-gray-600 mb-8">{{ error }}</p>
-      <router-link
-        to="/"
-        class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all"
-      >
+      <router-link to="/" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all">
         На главную
       </router-link>
     </div>
@@ -28,7 +25,7 @@
     <div v-else-if="event" class="space-y-8">
 
       <!-- HEADER -->
-      <div class="flex flex-col md:flex-row md:items-start md:justify-between">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div class="flex-1">
           <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ event.title }}</h1>
           <p class="text-gray-600">{{ event.description || 'Нет описания' }}</p>
@@ -38,12 +35,33 @@
           </div>
         </div>
 
-        <button
-          @click="scrollToLink"
-          class="mt-4 md:mt-0 px-5 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700"
-        >
-          Пригласить
-        </button>
+        <div class="flex gap-2 flex-wrap">
+          <span
+            v-if="isMember || isCreator"
+            class="inline-flex items-center gap-1 px-4 py-2 bg-green-100 text-green-700 rounded-xl font-medium text-sm"
+          >
+            Вы участник
+          </span>
+          <button
+            v-else-if="!isCreator"
+            @click="joinEvent"
+            :disabled="joining"
+            class="px-5 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 disabled:opacity-50 transition"
+          >
+            {{ joining ? 'Подождите...' : 'Присоединиться' }}
+          </button>
+          <button
+            @click="scrollToLink"
+            class="px-5 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700 transition"
+          >
+            Пригласить
+          </button>
+        </div>
+      </div>
+
+      <!-- Ошибка вступления -->
+      <div v-if="joinError" class="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">
+        {{ joinError }}
       </div>
 
       <!-- GRID: Vote + Chat -->
@@ -60,9 +78,12 @@
             <div
               v-for="option in dateOptions"
               :key="option.id"
-              @click="selectOption(option)"
-              class="border rounded-xl p-4 cursor-pointer hover:border-green-400 transition"
-              :class="selectedOptionId === option.id ? 'bg-green-50 border-green-500' : 'border-gray-200'"
+              @click="(isMember || isCreator) && selectOption(option)"
+              class="border rounded-xl p-4 transition"
+              :class="[
+                selectedOptionId === option.id ? 'bg-green-50 border-green-500' : 'border-gray-200',
+                (isMember || isCreator) ? 'cursor-pointer hover:border-green-400' : 'opacity-60 cursor-not-allowed'
+              ]"
             >
               <div class="flex justify-between items-center">
                 <div>
@@ -78,15 +99,54 @@
           <div v-if="voteSuccess" class="mt-3 text-sm text-green-600">Голос принят!</div>
 
           <button
+            v-if="isMember || isCreator"
             class="mt-6 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition"
             :disabled="!selectedOptionId || voting"
             @click="submitVote"
           >
             {{ voting ? 'Голосую...' : 'Проголосовать' }}
           </button>
+          <p v-else class="mt-6 text-center text-sm text-gray-400">
+            Присоединитесь к событию, чтобы голосовать
+          </p>
+
+          <!-- Предложить дату -->
+          <div v-if="isMember || isCreator" class="mt-4 border-t pt-4">
+            <button
+              v-if="!showProposeForm"
+              @click="showProposeForm = true"
+              class="w-full py-2 border-2 border-dashed border-gray-300 text-gray-500 rounded-xl hover:border-blue-400 hover:text-blue-600 transition text-sm"
+            >
+              + Предложить свою дату
+            </button>
+            <div v-else class="space-y-2">
+              <p class="text-sm font-medium text-gray-700">Предложить новую дату:</p>
+              <input
+                v-model="proposedDate"
+                type="datetime-local"
+                class="w-full p-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <div v-if="proposeError" class="text-sm text-red-600">{{ proposeError }}</div>
+              <div class="flex gap-2">
+                <button
+                  @click="submitPropose"
+                  :disabled="!proposedDate || proposing"
+                  class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm disabled:opacity-50 transition"
+                >
+                  {{ proposing ? 'Отправляю...' : 'Предложить' }}
+                </button>
+                <button
+                  @click="showProposeForm = false; proposedDate = ''; proposeError = ''"
+                  class="px-4 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- CHAT (заглушка до реализации) -->
+        <!-- CHAT -->
         <div class="bg-white rounded-xl shadow p-6 border flex flex-col">
           <div class="flex items-center mb-3">
             <span class="text-xl mr-2">💬</span>
@@ -106,7 +166,6 @@
             <span class="ml-2 text-sm font-normal text-gray-400">({{ uniqueParticipants.length }})</span>
           </h2>
         </div>
-
         <div v-if="uniqueParticipants.length" class="flex flex-wrap gap-3 mt-3">
           <div
             v-for="name in uniqueParticipants"
@@ -124,10 +183,12 @@
         <h2 class="text-lg font-semibold mb-3 flex items-center">
           <span class="mr-2 text-xl">🔗</span> Ссылка для приглашения
         </h2>
-
         <div class="flex flex-col sm:flex-row gap-3">
           <input :value="eventUrl" readonly class="flex-1 p-3 rounded-xl border bg-gray-50 text-sm" />
-          <button @click="copyLink" class="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition whitespace-nowrap">
+          <button
+            @click="copyLink"
+            class="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition whitespace-nowrap"
+          >
             {{ copied ? 'Скопировано!' : 'Копировать' }}
           </button>
         </div>
@@ -139,11 +200,14 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useEventStore } from '@/stores/event'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
+const router = useRouter()
 const eventStore = useEventStore()
+const authStore = useAuthStore()
 
 const selectedOptionId = ref(null)
 const voting = ref(false)
@@ -151,13 +215,20 @@ const voteError = ref('')
 const voteSuccess = ref(false)
 const copied = ref(false)
 const linkSection = ref(null)
+const showProposeForm = ref(false)
+const proposedDate = ref('')
+const proposing = ref(false)
+const proposeError = ref('')
+const joining = ref(false)
+const joinError = ref('')
 
 const event = computed(() => eventStore.currentEvent)
 const loading = computed(() => eventStore.loading)
 const error = computed(() => eventStore.error)
 const uniqueParticipants = computed(() => eventStore.uniqueParticipants)
-
 const dateOptions = computed(() => event.value?.date_options ?? [])
+const isMember = computed(() => eventStore.isMember(authStore.userId))
+const isCreator = computed(() => !!event.value?.event_user && event.value.event_user === authStore.userId)
 
 const eventUrl = computed(() =>
   event.value?.id ? `${window.location.origin}/event/${event.value.id}` : ''
@@ -172,6 +243,23 @@ const loadEvent = async () => {
   await eventStore.getEvent(route.params.id)
   if (dateOptions.value.length > 0) {
     selectedOptionId.value = dateOptions.value[0].id
+  }
+}
+
+const joinEvent = async () => {
+  if (!event.value?.id) return
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+    return
+  }
+  joining.value = true
+  joinError.value = ''
+  try {
+    await eventStore.joinEvent(event.value.id)
+  } catch (err) {
+    joinError.value = err.message || 'Ошибка при вступлении'
+  } finally {
+    joining.value = false
   }
 }
 
@@ -192,6 +280,21 @@ const submitVote = async () => {
     voteError.value = err.message || 'Ошибка голосования'
   } finally {
     voting.value = false
+  }
+}
+
+const submitPropose = async () => {
+  if (!proposedDate.value || !event.value?.id) return
+  proposing.value = true
+  proposeError.value = ''
+  try {
+    await eventStore.proposeDate(event.value.id, new Date(proposedDate.value).toISOString())
+    showProposeForm.value = false
+    proposedDate.value = ''
+  } catch (err) {
+    proposeError.value = err.message || 'Ошибка при добавлении даты'
+  } finally {
+    proposing.value = false
   }
 }
 

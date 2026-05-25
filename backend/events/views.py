@@ -1,4 +1,4 @@
-from datetime import timedelta
+﻿from datetime import timedelta
 
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import QuerySet
 
 from .authentication import EventUserJWTAuthentication
-from .models import Event, Participant, Vote, Message
+from .models import Event, Participant, Vote, Message, DateOption
 from .serializers import (
     EventCreateSerializer,
     EventDetailSerializer,
@@ -108,11 +108,16 @@ class EventCreateView(generics.CreateAPIView):
     authentication_classes = [EventUserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        event = serializer.save(event_user=self.request.user)
+        Participant.objects.create(event=event, event_user=self.request.user)
+
 
 class EventDetailView(generics.RetrieveAPIView):
     queryset = Event.objects.prefetch_related('date_options__votes', 'participants__event_user', 'messages')
     serializer_class = EventDetailSerializer
     lookup_field = 'id'
+    authentication_classes = []
     permission_classes = [AllowAny]
 
 
@@ -203,12 +208,54 @@ class EventParticipantView(generics.ListCreateAPIView):
         return Participant.objects.filter(event_id=event_id)
 
 
+class DateOptionCreateView(generics.GenericAPIView):
+    authentication_classes = [EventUserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, event_id):
+        date_str = request.data.get('date')
+        if not date_str:
+            return Response({'detail': 'Поле date обязательно.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return Response({'detail': 'Событие не найдено.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from django.utils.dateparse import parse_datetime
+        date = parse_datetime(date_str)
+        if not date:
+            return Response({'detail': 'Некорректный формат даты.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        option = DateOption.objects.create(event=event, date=date)
+        return Response({'id': option.id, 'date': option.date}, status=status.HTTP_201_CREATED)
+
+
+class JoinEventView(generics.GenericAPIView):
+    authentication_classes = [EventUserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, event_id):
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return Response({'detail': 'Событие не найдено.'}, status=status.HTTP_404_NOT_FOUND)
+
+        _, created = Participant.objects.get_or_create(event=event, event_user=request.user)
+        return Response({'status': 'joined' if created else 'already_joined'}, status=status.HTTP_200_OK)
+
+
 class UserEventsView(generics.ListAPIView):
     serializer_class = EventDetailSerializer
     authentication_classes = [EventUserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_authenticate_header(self, request):
+        return EventUserJWTAuthentication().authenticate_header(request)
+
     def get_queryset(self) -> QuerySet[Event]:  # type: ignore
+        user_id = self.kwargs['user_id']
         return Event.objects.filter(
-            event_user_id=self.kwargs['user_id']
-        ).prefetch_related('date_options', 'participants', 'messages')
+            participants__event_user_id=user_id
+        ).distinct().prefetch_related('date_options', 'participants__event_user', 'messages')
+
+
