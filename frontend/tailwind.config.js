@@ -21,7 +21,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Outfit', 'system-ui', 'sans-serif'],
+        display: ['Raydis', 'Inter', 'sans-serif'],
       },
       borderRadius: {
         'xl': '1rem',

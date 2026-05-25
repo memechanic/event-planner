@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="min-h-screen bg-white flex flex-col">
+  <div id="app" class="min-h-screen bg-stone-100 flex flex-col">
     <!-- Навигация -->
     <nav class="bg-white sticky top-0 z-50 border-b border-gray-200">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -9,8 +9,8 @@
             to="/"
             class="flex items-center gap-2 text-gray-900 hover:text-gray-600 transition-colors"
           >
-            <span class="text-lg">🗓️</span>
-            <span class="text-base font-semibold tracking-tight">Event Planner</span>
+            <!-- <span class="text-lg">🗓️</span> -->
+            <span class="font-display text-lg tracking-wide">Event Planner</span>
           </router-link>
 
           <div class="flex items-center gap-1">
@@ -67,10 +67,10 @@
     </main>
 
     <!-- Футер -->
-    <footer class="border-t border-gray-200 mt-auto">
+    <footer class="bg-gray-900 mt-auto">
       <div class="container mx-auto px-4 py-5">
         <p class="text-sm text-center text-gray-400">
-          © 2025 Event Planner
+          © Event Planner
         </p>
       </div>
     </footer>

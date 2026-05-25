@@ -2,12 +2,12 @@
   <div class="max-w-6xl mx-auto px-4 py-8 md:py-12 lg:py-16">
     <!-- Hero Section -->
     <div class="text-center mb-16 lg:mb-24">
-      <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 text-gray-900">
-        🗓️ Event Planner
+      <h1 class="font-display text-5xl md:text-6xl lg:text-7xl mb-4 md:mb-6 text-gray-900">
+        Event Planner
       </h1>
       
       <p class="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 md:mb-12 max-w-3xl mx-auto px-4">
-        Простое планирование встреч с друзьями и коллегами
+        Совместный планировщик мероприятий
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
@@ -49,10 +49,10 @@
     </div> -->
     
     <!-- Calendar Section -->
-    <div class="bg-white rounded-xl p-6 md:p-8 border border-gray-200 mb-8">
+    <div class="bg-white rounded-md p-6 md:p-8 border-2 border-gray-300 mb-8">
       <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
         <h2 class="text-xl font-semibold text-gray-900">
-          Интерактивный календарь
+          Ваш календарь
         </h2>
         <span class="text-sm md:text-base text-gray-500">
           Выберите день и посмотрите события
@@ -70,7 +70,7 @@
                 ← Назад
               </button>
               <button
-                class="px-3 py-2 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
+                class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
                 @click="goToToday"
               >
                 Сегодня
@@ -104,10 +104,10 @@
               class="aspect-square rounded-xl border text-sm md:text-base transition-all duration-150 relative"
               :class="[
                 day.inCurrentMonth
-                  ? 'border-gray-200 text-gray-800 hover:bg-blue-50'
+                  ? 'border-gray-200 text-gray-800 hover:bg-gray-100'
                   : 'border-gray-100 text-gray-300 bg-gray-50',
-                day.isToday ? 'ring-2 ring-blue-300' : '',
-                day.isSelected ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600' : '',
+                day.isToday ? 'ring-2 ring-gray-400' : '',
+                day.isSelected ? 'bg-gray-900 text-white border-gray-900 hover:bg-gray-900' : '',
               ]"
               :disabled="!day.inCurrentMonth"
               @click="selectDate(day.date)"
@@ -116,13 +116,13 @@
               <span
                 v-if="day.eventsCount > 0"
                 class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                :class="day.isSelected ? 'bg-white' : 'bg-blue-500'"
+                :class="day.isSelected ? 'bg-white' : 'bg-gray-500'"
               />
             </button>
           </div>
         </div>
 
-        <div class="bg-gray-50 rounded-2xl p-4 md:p-5 border border-gray-100">
+        <div class="bg-white rounded-md p-4 md:p-5 border border-gray-200">
           <h4 class="text-lg font-semibold text-gray-800 mb-2">
             {{ selectedDateLabel }}
           </h4>
@@ -140,15 +140,23 @@
               <p class="text-sm text-gray-500">{{ event.time }}</p>
             </li>
           </ul>
-          <div v-else class="text-sm text-gray-500 bg-white border border-dashed border-gray-300 rounded-xl p-4">
-            В этот день событий пока нет
+          <div v-else class="flex flex-col gap-3">
+            <p class="text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-md p-4">
+              В этот день событий пока нет
+            </p>
+            <router-link
+              :to="`/create?date=${selectedDate.format('YYYY-MM-DD')}`"
+              class="w-full py-2 text-sm font-medium text-center border-2 border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-gray-700"
+            >
+              Создать событие в этот день
+            </router-link>
           </div>
         </div>
       </div>
     </div>
 
     <!-- User Events Section -->
-    <div class="bg-white rounded-xl p-6 md:p-8 border border-gray-200 mb-8">
+    <div class="bg-white rounded-md p-6 md:p-8 border-2 border-gray-300 mb-8">
       <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
         <h2 class="text-xl font-semibold text-gray-900">
           Мои события
@@ -158,7 +166,7 @@
         </span>
       </div>
 
-      <div v-if="!authStore.isAuthenticated" class="text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-4">
+      <div v-if="!authStore.isAuthenticated" class="text-sm text-gray-500 bg-white border border-dashed border-gray-300 rounded-xl p-4">
         Войдите в аккаунт, чтобы видеть и удалять свои события
       </div>
 
@@ -175,89 +183,62 @@
           <li
             v-for="event in userEvents"
             :key="event.id"
-            class="rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4 hover:bg-gray-50 transition-colors"
+            class="bg-white rounded-md border-2 border-gray-200 p-4 flex items-start justify-between gap-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            @click.stop="$router.push(`/event/${event.id}`)"
           >
             <div>
               <p class="font-semibold text-gray-800">{{ event.title }}</p>
               <p class="text-sm text-gray-500 mt-1">
                 {{ formatEventDate(event.created_at) }}
               </p>
-              <router-link
-                :to="`/event/${event.id}`"
-                class="inline-block text-sm text-blue-600 hover:text-blue-800 mt-2"
-              >
-                Открыть событие
-              </router-link>
             </div>
 
             <button
-              class="px-3 py-2 text-sm rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+              class="px-3 py-2 text-sm rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 flex-shrink-0"
               :disabled="deletingEventId === event.id"
-              @click="deleteUserEvent(event.id)"
+              @click.stop="deleteUserEvent(event.id)"
             >
               {{ deletingEventId === event.id ? 'Удаление...' : 'Удалить' }}
             </button>
           </li>
         </ul>
 
-        <div v-else class="text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-4">
+        <div v-else class="text-sm text-gray-500 bg-white border border-dashed border-gray-300 rounded-xl p-4">
           У вас пока нет событий
         </div>
       </div>
     </div>
 
     <!-- How It Works Section -->
-    <div class="rounded-xl p-6 md:p-8 border border-gray-200 mb-8">
+    <div class="bg-white rounded-md p-6 md:p-8 border-2 border-gray-300 mb-8">
       <h2 class="text-xl font-semibold text-gray-900 mb-8 text-center">
         Как это работает
       </h2>
-      
-      <div class="max-w-3xl mx-auto">
-        <ol class="space-y-6 md:space-y-8">
-          <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
-              1
-            </div>
-            <div class="pt-2">
-              <p class="text-lg md:text-xl font-medium text-gray-800 leading-relaxed">
-                Создайте событие с названием и вариантами дат
-              </p>
-            </div>
-          </li>
-          
-          <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
-              2
-            </div>
-            <div class="pt-2">
-              <p class="text-lg md:text-xl font-medium text-gray-800 leading-relaxed">
-                Отправьте ссылку друзьям или коллегам
-              </p>
-            </div>
-          </li>
-          
-          <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
-              3
-            </div>
-            <div class="pt-2">
-              <p class="text-lg md:text-xl font-medium text-gray-800 leading-relaxed">
-                Участники голосуют за удобные даты
-              </p>
-            </div>
-          </li>
-          
-          <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
-              4
-            </div>
-            <div class="pt-2">
-              <p class="text-lg md:text-xl font-medium text-gray-800 leading-relaxed">
-                Вы видите результаты и выбираете лучшую дату
-              </p>
-            </div>
-          </li>
-        </ol>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="border-2 border-gray-200 rounded-md p-5">
+          <!-- <div class="text-4xl font-bold text-gray-200 mb-3 leading-none">01</div> -->
+          <p class="text-sm font-semibold text-gray-900 mb-1">Создайте событие</p>
+          <p class="text-sm text-gray-500">Укажите название и варианты дат для голосования</p>
+        </div>
+
+        <div class="border-2 border-gray-200 rounded-md p-5">
+          <!-- <div class="text-4xl font-bold text-gray-200 mb-3 leading-none">02</div> -->
+          <p class="text-sm font-semibold text-gray-900 mb-1">Пригласите участников</p>
+          <p class="text-sm text-gray-500">Отправьте уникальную ссылку друзьям или коллегам</p>
+        </div>
+
+        <div class="border-2 border-gray-200 rounded-md p-5">
+          <!-- <div class="text-4xl font-bold text-gray-200 mb-3 leading-none">03</div> -->
+          <p class="text-sm font-semibold text-gray-900 mb-1">Голосуйте за дату</p>
+          <p class="text-sm text-gray-500">Участники выбирают подходящее время, обсуждают в чате</p>
+        </div>
+
+        <div class="border-2 border-gray-200 rounded-md p-5">
+          <!-- <div class="text-4xl font-bold text-gray-200 mb-3 leading-none">04</div> -->
+          <p class="text-sm font-semibold text-gray-900 mb-1">Планируйте задачи</p>
+          <p class="text-sm text-gray-500">Распределяйте задачи между участниками события</p>
+        </div>
       </div>
     </div>
   </div>

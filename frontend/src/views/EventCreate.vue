@@ -2,21 +2,21 @@
   <div class="max-w-2xl mx-auto px-4 py-8">
     <!-- Заголовок -->
     <div class="mb-8">
-      <router-link 
-        to="/" 
+      <router-link
+        to="/"
         class="inline-flex items-center text-gray-600 hover:text-blue-600 mb-4 group transition-colors"
       >
-        <svg 
-          class="w-5 h-5 mr-2 transform group-hover:-translate-x-0.5 transition-transform" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          class="w-5 h-5 mr-2 transform group-hover:-translate-x-0.5 transition-transform"
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
         На главную
       </router-link>
-      
+
       <div class="flex items-center gap-3">
         <h1 class="text-2xl font-semibold text-gray-900">Создать событие</h1>
       </div>
@@ -24,7 +24,7 @@
         Заполните форму и создайте событие для совместного планирования с друзьями или коллегами
       </p>
     </div>
-    
+
     <!-- Форма -->
     <div class="bg-white rounded-xl p-6 md:p-8 border border-gray-200">
       <form @submit.prevent="handleSubmit" class="space-y-8">
@@ -58,7 +58,7 @@
             class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors resize-none placeholder-gray-400"
           ></textarea>
         </div>
-        
+
         <!-- Даты для голосования -->
         <div>
           <div class="flex items-center justify-between mb-2">
@@ -69,19 +69,19 @@
               type="button"
               @click="addDate"
               :disabled="loading"
-              class="text-sm text-blue-600 hover:text-blue-800 font-semibold transition-colors disabled:opacity-50"
+              class="text-sm text-gray-700 hover:text-gray-900 font-semibold transition-colors disabled:opacity-50"
             >
-              + Добавить дату
+              Добавить дату
             </button>
           </div>
-          
+
           <p class="text-sm text-gray-500 mb-4">
             Укажите несколько вариантов, участники выберут подходящие
           </p>
-          
+
           <div class="space-y-3">
             <div
-              v-for="(date, index) in dates"
+              v-for="(_, index) in dates"
               :key="index"
               class="flex items-center gap-3"
             >
@@ -107,7 +107,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Кнопки -->
         <div class="pt-4">
           <div class="flex flex-col sm:flex-row gap-4">
@@ -127,10 +127,10 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                🎉 Создать событие
+                Создать событие
               </span>
             </button>
-            
+
             <router-link
               to="/"
               class="py-2.5 px-6 border border-gray-200 text-gray-600 hover:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors text-center"
@@ -138,10 +138,10 @@
               Отмена
             </router-link>
           </div>
-          
+
           <!-- Ошибка -->
-          <div 
-            v-if="error" 
+          <div
+            v-if="error"
             class="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start"
           >
             <svg class="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,11 +150,11 @@
             <span class="text-red-700">{{ error }}</span>
           </div>
         </div>
-        
+
         <!-- Информационный блок -->
         <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
           <p class="text-sm text-gray-600">
-            После создания вы получите уникальную ссылку — отправьте её участникам для голосования.
+            После создания вы получите уникальную ссылку — отправьте её участникам для приглашения.
           </p>
         </div>
       </form>
@@ -164,12 +164,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useEventStore } from '@/stores/event'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const eventStore = useEventStore()
 
 // Данные формы
@@ -181,7 +182,15 @@ const getTomorrowDate = () => {
   tomorrow.setHours(18, 0, 0, 0)
   return tomorrow.toISOString().slice(0, 16)
 }
-const dates = ref([getTomorrowDate()]) // Начинаем с одной даты (завтра)
+const getInitialDate = () => {
+  if (route.query.date) {
+    const d = new Date(route.query.date)
+    d.setHours(18, 0, 0, 0)
+    if (!isNaN(d.getTime())) return d.toISOString().slice(0, 16)
+  }
+  return getTomorrowDate()
+}
+const dates = ref([getInitialDate()])
 
 // Состояние
 const loading = computed(() => eventStore.loading)
@@ -194,7 +203,6 @@ const isFormValid = computed(() => {
          dates.value.every(date => date && date.trim() !== '')
 })
 
-// Получить минимальную дату (текущее время)
 const getMinDate = () => {
   const now = new Date()
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
@@ -226,67 +234,32 @@ const handleSubmit = async () => {
     router.push('/login')
     return
   }
-  const processedDates = dates.value.map(dateStr => {
-    try {
-      // input[type="datetime-local"] возвращает строку в формате "YYYY-MM-DDTHH:mm"
-      // Нужно добавить временную зону
-      const dateObj = new Date(dateStr);
-      
-      // Проверяем, что дата валидна
-      if (isNaN(dateObj.getTime())) {
-        console.error('❌ Неверная дата:', dateStr);
-        return null;
-      }
-      
-      // Преобразуем в ISO строку (с часовым поясом UTC)
-      const isoString = dateObj.toISOString();
-      console.log(`✅ Преобразовано: ${dateStr} → ${isoString}`);
-      return isoString;
-      
-    } catch (error) {
-      console.error('❌ Ошибка преобразования даты:', dateStr, error);
-      return null;
-    }
-  }).filter(date => date !== null); // Убираем невалидные даты
-  
-  if (processedDates.length === 0) {
-    alert('Нет валидных дат для события');
-    return;
-  }
-  console.log('Отправка данных:', {
-    title: title.value,
-    description: description.value,
-    dates: dates.value
-  })
 
-  // Подготавливаем данные для API
+  const processedDates = dates.value.map(dateStr => {
+    const dateObj = new Date(dateStr)
+    return isNaN(dateObj.getTime()) ? null : dateObj.toISOString()
+  }).filter(Boolean)
+
+  if (processedDates.length === 0) {
+    alert('Нет валидных дат для события')
+    return
+  }
+
   const eventData = {
     title: title.value.trim(),
     event_user: authStore.userId,
     description: description.value.trim(),
-    dates: dates.value.map(date => {
-      // Преобразуем local datetime в ISO строку
-      const dateObj = new Date(date)
-      return dateObj.toISOString()
-    })
+    dates: processedDates,
   }
-  
+
   try {
-    // Используем store для создания
     const createdEvent = await eventStore.createEvent(eventData)
-    
-    console.log('✅ Событие создано, ID:', createdEvent.id)
-    
-    // Переходим на страницу события
     router.push(`/event/${createdEvent.id}`)
-    
   } catch (err) {
-    console.error('❌ Ошибка при создании:', err)
-    // Ошибка уже в store.error
+    console.error('Ошибка при создании:', err)
   }
 }
 </script>
 
 <style scoped>
-/* Все стили заменены на Tailwind классы */
 </style>

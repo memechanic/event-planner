@@ -1,4 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'Raydis';
+  src: url('@/assets/fonts/RAYDIS/RAYDIS.woff2') format('woff2'),
+       url('@/assets/fonts/RAYDIS/RAYDIS.woff') format('woff'),
+       url('@/assets/fonts/RAYDIS/RAYDIS.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +16,7 @@
 
 @layer base {
   body {
-    @apply bg-white text-gray-900 font-sans;
+    @apply bg-stone-100 text-gray-900 font-sans;
   }
 }
 
