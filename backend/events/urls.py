@@ -9,6 +9,8 @@ from .views import (
     JoinEventView,
     EventMessagesView,
     EventParticipantView,
+    TaskListCreateView,
+    TaskUpdateDeleteView,
     EventUserRegisterView,
     EventUserLoginView,
     TokenRefreshView,
@@ -32,6 +34,8 @@ urlpatterns = [
     path('events/<uuid:event_id>/dates/', DateOptionCreateView.as_view()),
 
     path('events/<uuid:event_id>/join/', JoinEventView.as_view()),
+    path('events/<uuid:event_id>/tasks/', TaskListCreateView.as_view()),
+    path('events/<uuid:event_id>/tasks/<uuid:task_id>/', TaskUpdateDeleteView.as_view()),
 
     # Users
     path('users/<uuid:user_id>/events/', UserEventsView.as_view()),

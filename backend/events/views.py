@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import QuerySet
 
 from .authentication import EventUserJWTAuthentication
-from .models import Event, Participant, Vote, Message, DateOption
+from .models import Event, Participant, Vote, Message, DateOption, Task
 from .serializers import (
     EventCreateSerializer,
     EventDetailSerializer,
@@ -16,6 +16,7 @@ from .serializers import (
     VoteSerializer,
     MessageSerializer,
     ParticipantSerializer,
+    TaskSerializer,
     EventUserRegisterSerializer,
     EventUserLoginSerializer,
 )
@@ -246,6 +247,90 @@ class JoinEventView(generics.GenericAPIView):
 
         _, created = Participant.objects.get_or_create(event=event, event_user=request.user)
         return Response({'status': 'joined' if created else 'already_joined'}, status=status.HTTP_200_OK)
+
+
+class TaskListCreateView(generics.ListCreateAPIView):
+    serializer_class = TaskSerializer
+
+    def get_authenticators(self):
+        if self.request.method == 'POST':
+            return [EventUserJWTAuthentication()]
+        return []
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
+    def perform_create(self, serializer):
+        serializer.save(event_id=self.kwargs['event_id'], created_by=self.request.user)
+
+    def get_queryset(self) -> QuerySet:  # type: ignore
+        return Task.objects.filter(event_id=self.kwargs['event_id']).order_by('created_at')
+
+
+class TaskUpdateDeleteView(generics.GenericAPIView):
+    authentication_classes = [EventUserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def _get_task(self, event_id, task_id):
+        try:
+            return Task.objects.select_related('event', 'assigned_to__event_user').get(
+                id=task_id, event_id=event_id
+            )
+        except Task.DoesNotExist:
+            return None
+
+    def patch(self, request, event_id, task_id):
+        task = self._get_task(event_id, task_id)
+        if not task:
+            return Response({'detail': 'Задача не найдена.'}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+        is_organizer = str(task.event.event_user_id) == str(user.id)
+        is_task_creator = str(task.created_by_id) == str(user.id)
+        participant = Participant.objects.filter(event_id=event_id, event_user=user).first()
+        is_assigned = participant and task.assigned_to_id and str(task.assigned_to_id) == str(participant.id)
+
+        data = request.data
+
+        if ('title' in data or 'description' in data) and not (is_task_creator or is_organizer):
+            return Response({'detail': 'Редактировать задачу может только её создатель или организатор.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        if 'assigned_to' in data:
+            if not is_organizer:
+                if task.assigned_to is not None:
+                    return Response({'detail': 'Назначать участника может только организатор.'},
+                                    status=status.HTTP_403_FORBIDDEN)
+                if not participant or str(data['assigned_to']) != str(participant.id):
+                    return Response({'detail': 'Вы можете взять задачу только на себя.'},
+                                    status=status.HTTP_403_FORBIDDEN)
+
+        if 'is_done' in data and not (is_assigned or is_organizer):
+            return Response({'detail': 'Отмечать выполнение может назначенный участник или организатор.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        serializer = TaskSerializer(task, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, event_id, task_id):
+        task = self._get_task(event_id, task_id)
+        if not task:
+            return Response({'detail': 'Задача не найдена.'}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+        is_organizer = str(task.event.event_user_id) == str(user.id)
+        is_task_creator = str(task.created_by_id) == str(user.id)
+
+        if not (is_task_creator or is_organizer):
+            return Response({'detail': 'Удалять задачу может только её создатель или организатор.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        task.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserEventsView(generics.ListAPIView):

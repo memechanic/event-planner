@@ -95,6 +95,22 @@ class Vote(models.Model):
         return f"{self.participant.event_user.username}: {self.date_option.date}"
 
 
+class Task(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    event = models.ForeignKey(Event, related_name='tasks', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(EventUser, on_delete=models.CASCADE, related_name='created_tasks')
+    assigned_to = models.ForeignKey(
+        'Participant', null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_tasks'
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    is_done = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} [{self.event.title}]"
+
+
 class Message(models.Model):
     event = models.ForeignKey(
         Event,

@@ -3,7 +3,7 @@ import re
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework import serializers
 
-from .models import Event, DateOption, EventUser, Participant, Vote, Message
+from .models import Event, DateOption, EventUser, Participant, Vote, Message, Task
 
 
 # ─── Date options ────────────────────────────────────────────────────────────
@@ -164,6 +164,31 @@ class EventCreateSerializer(serializers.ModelSerializer):
             for date in dates
         ])
         return event
+
+
+# ─── Tasks ───────────────────────────────────────────────────────────────────
+
+class TaskSerializer(serializers.ModelSerializer):
+    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
+    assigned_to_username = serializers.SerializerMethodField()
+    assigned_to_user_id = serializers.SerializerMethodField()
+
+    def get_assigned_to_username(self, obj):
+        return obj.assigned_to.event_user.username if obj.assigned_to else None
+
+    def get_assigned_to_user_id(self, obj):
+        return str(obj.assigned_to.event_user.id) if obj.assigned_to else None
+
+    class Meta:
+        model = Task
+        fields = (
+            'id', 'title', 'description', 'is_done',
+            'created_by', 'created_by_username',
+            'assigned_to', 'assigned_to_username', 'assigned_to_user_id',
+            'created_at',
+        )
+        read_only_fields = ('id', 'created_by', 'created_by_username',
+                            'assigned_to_username', 'assigned_to_user_id', 'created_at')
 
 
 # ─── Votes ───────────────────────────────────────────────────────────────────

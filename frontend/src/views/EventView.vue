@@ -191,6 +191,131 @@
 
       </div>
 
+      <!-- TASKS -->
+      <div class="bg-white rounded-xl shadow p-6 border">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <span class="text-xl">📋</span>
+            Задачи
+            <span class="text-sm font-normal text-gray-400">({{ tasks.length }})</span>
+          </h2>
+          <button
+            v-if="isMember || isCreator"
+            @click="showAddTaskForm = !showAddTaskForm"
+            class="text-sm text-blue-600 hover:text-blue-800 font-medium transition"
+          >
+            + Добавить задачу
+          </button>
+        </div>
+
+        <!-- Форма добавления -->
+        <div v-if="showAddTaskForm" class="mb-4 p-4 bg-gray-50 rounded-xl border space-y-2">
+          <input
+            v-model="taskTitle"
+            type="text"
+            placeholder="Название задачи *"
+            class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <textarea
+            v-model="taskDescription"
+            placeholder="Описание (необязательно)"
+            rows="2"
+            class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+          />
+          <div class="flex gap-2">
+            <button
+              @click="addTask"
+              :disabled="!taskTitle.trim() || addingTask"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition"
+            >
+              {{ addingTask ? 'Добавление...' : 'Добавить' }}
+            </button>
+            <button
+              @click="showAddTaskForm = false; taskTitle = ''; taskDescription = ''"
+              class="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+
+        <!-- Список задач -->
+        <div v-if="tasks.length" class="space-y-3">
+          <div
+            v-for="task in tasks"
+            :key="task.id"
+            class="flex items-start gap-3 p-3 border rounded-xl transition"
+            :class="task.is_done ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'"
+          >
+            <!-- Чекбокс -->
+            <button
+              v-if="canToggleDone(task)"
+              @click="toggleDone(task)"
+              class="mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition"
+              :class="task.is_done ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-green-400'"
+            >
+              <span v-if="task.is_done" class="text-white text-xs leading-none">✓</span>
+            </button>
+            <div
+              v-else
+              class="mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center"
+              :class="task.is_done ? 'bg-green-500 border-green-500' : 'border-gray-200'"
+            >
+              <span v-if="task.is_done" class="text-white text-xs leading-none">✓</span>
+            </div>
+
+            <!-- Контент -->
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800" :class="{ 'line-through text-gray-400': task.is_done }">
+                {{ task.title }}
+              </p>
+              <p v-if="task.description" class="text-xs text-gray-500 mt-0.5">{{ task.description }}</p>
+
+              <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+                <span v-if="task.assigned_to_username" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                  👤 {{ task.assigned_to_username }}
+                </span>
+                <button
+                  v-else-if="canSelfAssign(task)"
+                  @click="selfAssign(task.id)"
+                  class="text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  Взять задачу
+                </button>
+                <span v-else class="text-xs text-gray-400">Не назначено</span>
+
+                <!-- Дропдаун назначения для организатора -->
+                <select
+                  v-if="isCreator"
+                  :value="task.assigned_to || ''"
+                  @change="assignTask(task.id, $event.target.value || null)"
+                  class="text-xs border rounded px-1 py-0.5 text-gray-600"
+                >
+                  <option value="">— назначить —</option>
+                  <option v-for="p in event.participants" :key="p.id" :value="p.id">
+                    {{ p.username }}
+                  </option>
+                </select>
+              </div>
+
+              <p class="text-xs text-gray-400 mt-1">Создал: {{ task.created_by_username }}</p>
+            </div>
+
+            <!-- Удаление -->
+            <button
+              v-if="canDeleteTask(task)"
+              @click="deleteTask(task.id)"
+              class="flex-shrink-0 text-gray-300 hover:text-red-500 text-xl leading-none transition"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <p v-else class="text-sm text-gray-400">
+          {{ (isMember || isCreator) ? 'Задач пока нет. Добавьте первую!' : 'Задач пока нет.' }}
+        </p>
+      </div>
+
       <!-- PARTICIPANTS -->
       <div class="bg-white rounded-xl shadow p-6 border">
         <div class="flex items-center mb-3">
@@ -269,6 +394,78 @@ const eventUrl = computed(() =>
   event.value?.id ? `${window.location.origin}/event/${event.value.id}` : ''
 )
 
+// ── Tasks ─────────────────────────────────────────────────────────────────────
+const tasks = ref([])
+const taskTitle = ref('')
+const taskDescription = ref('')
+const showAddTaskForm = ref(false)
+const addingTask = ref(false)
+
+const currentParticipant = computed(() =>
+  event.value?.participants?.find(p => p.event_user === authStore.userId) ?? null
+)
+
+const canToggleDone = (task) => {
+  if (isCreator.value) return true
+  return !!currentParticipant.value && task.assigned_to === currentParticipant.value.id
+}
+
+const canSelfAssign = (task) =>
+  (isMember.value && !isCreator.value) && !task.assigned_to
+
+const canDeleteTask = (task) =>
+  isCreator.value || task.created_by === authStore.userId
+
+const loadTasks = async () => {
+  if (!route.params.id) return
+  try {
+    const res = await api.get(`/events/${route.params.id}/tasks/`)
+    tasks.value = res.data
+  } catch {}
+}
+
+const addTask = async () => {
+  if (!taskTitle.value.trim() || !event.value?.id) return
+  addingTask.value = true
+  try {
+    await api.post(`/events/${event.value.id}/tasks/`, {
+      title: taskTitle.value.trim(),
+      description: taskDescription.value.trim(),
+    })
+    taskTitle.value = ''
+    taskDescription.value = ''
+    showAddTaskForm.value = false
+    await loadTasks()
+  } catch {} finally {
+    addingTask.value = false
+  }
+}
+
+const deleteTask = async (taskId) => {
+  try {
+    await api.delete(`/events/${event.value.id}/tasks/${taskId}/`)
+    await loadTasks()
+  } catch {}
+}
+
+const toggleDone = async (task) => {
+  try {
+    await api.patch(`/events/${event.value.id}/tasks/${task.id}/`, { is_done: !task.is_done })
+    await loadTasks()
+  } catch {}
+}
+
+const assignTask = async (taskId, participantId) => {
+  try {
+    await api.patch(`/events/${event.value.id}/tasks/${taskId}/`, {
+      assigned_to: participantId,
+    })
+    await loadTasks()
+  } catch {}
+}
+
+const selfAssign = (taskId) => assignTask(taskId, currentParticipant.value?.id)
+
 // ── Chat ─────────────────────────────────────────────────────────────────────
 const messages = ref([])
 const chatText = ref('')
@@ -311,7 +508,8 @@ const sendMessage = async () => {
 const startPolling = () => {
   stopPolling()
   loadMessages()
-  pollInterval = setInterval(loadMessages, 3000)
+  loadTasks()
+  pollInterval = setInterval(() => { loadMessages(); loadTasks() }, 3000)
 }
 
 const stopPolling = () => {
@@ -334,6 +532,7 @@ const loadEvent = async () => {
   if (dateOptions.value.length > 0) {
     selectedOptionId.value = dateOptions.value[0].id
   }
+  await loadTasks()
 }
 
 const joinEvent = async () => {
