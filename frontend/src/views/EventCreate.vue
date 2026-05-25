@@ -17,13 +17,8 @@
         На главную
       </router-link>
       
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-          <span class="text-white text-lg">📅</span>
-        </div>
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-          Создать новое событие
-        </h1>
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-semibold text-gray-900">Создать событие</h1>
       </div>
       <p class="text-gray-600 mt-2 max-w-3xl">
         Заполните форму и создайте событие для совместного планирования с друзьями или коллегами
@@ -31,7 +26,7 @@
     </div>
     
     <!-- Форма -->
-    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100">
+    <div class="bg-white rounded-xl p-6 md:p-8 border border-gray-200">
       <form @submit.prevent="handleSubmit" class="space-y-8">
         <!-- Название -->
         <div>
@@ -45,13 +40,13 @@
             placeholder="Например: Встреча команды, День рождения, Встреча с клиентом"
             required
             :disabled="loading"
-            class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 placeholder-gray-400"
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors placeholder-gray-400"
           />
         </div>
-        
+
         <!-- Описание -->
         <div>
-          <label for="description" class="block text-sm font-semibold text-gray-800 mb-2">
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-1.5">
             Описание
           </label>
           <textarea
@@ -60,14 +55,14 @@
             rows="3"
             placeholder="Детали события, адрес, что взять с собой..."
             :disabled="loading"
-            class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 resize-none placeholder-gray-400"
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors resize-none placeholder-gray-400"
           ></textarea>
         </div>
         
         <!-- Даты для голосования -->
         <div>
           <div class="flex items-center justify-between mb-2">
-            <label class="block text-sm font-semibold text-gray-800">
+            <label class="block text-sm font-medium text-gray-700">
               Даты для голосования <span class="text-red-500">*</span>
             </label>
             <button
@@ -96,7 +91,7 @@
                 :min="getMinDate()"
                 required
                 :disabled="loading"
-                class="flex-1 px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+                class="flex-1 px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
               />
               <button
                 type="button"
@@ -119,7 +114,7 @@
             <button
               type="submit"
               :disabled="loading || !isFormValid"
-              class="flex-1 py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow"
+              class="flex-1 py-2.5 px-6 bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span v-if="loading" class="flex items-center justify-center">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -136,9 +131,9 @@
               </span>
             </button>
             
-            <router-link 
-              to="/" 
-              class="py-4 px-6 border-2 border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 text-center"
+            <router-link
+              to="/"
+              class="py-2.5 px-6 border border-gray-200 text-gray-600 hover:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors text-center"
             >
               Отмена
             </router-link>
@@ -157,20 +152,10 @@
         </div>
         
         <!-- Информационный блок -->
-        <div class="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
-          <div class="flex items-start">
-            <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <div>
-              <p class="text-blue-800 font-medium mb-1">
-                💡 После создания вы получите уникальную ссылку
-              </p>
-              <p class="text-blue-700 text-sm">
-                Отправьте её участникам — голосование работает без регистрации на любом устройстве
-              </p>
-            </div>
-          </div>
+        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600">
+            После создания вы получите уникальную ссылку — отправьте её участникам для голосования.
+          </p>
         </div>
       </form>
     </div>

@@ -98,7 +98,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Participant
-        fields = ('id', 'event_user', 'username')
+        fields = ('id', 'event_user', 'username', 'is_organizer')
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -106,10 +106,15 @@ class MessageSerializer(serializers.ModelSerializer):
         source='participant.event_user.username',
         read_only=True,
     )
+    sender_is_organizer = serializers.BooleanField(
+        source='participant.is_organizer',
+        read_only=True,
+        default=False,
+    )
 
     class Meta:
         model = Message
-        fields = ('id', 'sender_username', 'text', 'created_at')
+        fields = ('id', 'sender_username', 'sender_is_organizer', 'text', 'created_at')
 
 
 # ─── Events ──────────────────────────────────────────────────────────────────

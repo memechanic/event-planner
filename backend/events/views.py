@@ -111,7 +111,7 @@ class EventCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         event = serializer.save(event_user=self.request.user)
-        Participant.objects.create(event=event, event_user=self.request.user)
+        Participant.objects.create(event=event, event_user=self.request.user, is_organizer=True)
 
 
 class EventDetailView(generics.RetrieveAPIView):
@@ -249,6 +249,43 @@ class JoinEventView(generics.GenericAPIView):
         return Response({'status': 'joined' if created else 'already_joined'}, status=status.HTTP_200_OK)
 
 
+class ParticipantRoleView(generics.GenericAPIView):
+    authentication_classes = [EventUserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, event_id, participant_id):
+        try:
+            target = Participant.objects.select_related('event').get(
+                id=participant_id, event_id=event_id
+            )
+        except Participant.DoesNotExist:
+            return Response({'detail': 'Участник не найден.'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_value = request.data.get('is_organizer')
+        if new_value is None:
+            return Response({'detail': 'Поле is_organizer обязательно.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        requester = Participant.objects.filter(event_id=event_id, event_user=user).first()
+        is_event_creator = str(target.event.event_user_id) == str(user.id)
+
+        if new_value:
+            if not (requester and requester.is_organizer):
+                return Response({'detail': 'Назначать организаторов может только организатор.'},
+                                status=status.HTTP_403_FORBIDDEN)
+        else:
+            if not is_event_creator:
+                return Response({'detail': 'Снять роль организатора может только создатель события.'},
+                                status=status.HTTP_403_FORBIDDEN)
+            if str(target.event_user_id) == str(target.event.event_user_id):
+                return Response({'detail': 'Нельзя снять роль организатора с создателя события.'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+        target.is_organizer = bool(new_value)
+        target.save(update_fields=['is_organizer'])
+        return Response(ParticipantSerializer(target).data)
+
+
 class TaskListCreateView(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
 
@@ -287,9 +324,9 @@ class TaskUpdateDeleteView(generics.GenericAPIView):
             return Response({'detail': 'Задача не найдена.'}, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-        is_organizer = str(task.event.event_user_id) == str(user.id)
-        is_task_creator = str(task.created_by_id) == str(user.id)
         participant = Participant.objects.filter(event_id=event_id, event_user=user).first()
+        is_organizer = bool(participant and participant.is_organizer)
+        is_task_creator = str(task.created_by_id) == str(user.id)
         is_assigned = participant and task.assigned_to_id and str(task.assigned_to_id) == str(participant.id)
 
         data = request.data
@@ -322,7 +359,7 @@ class TaskUpdateDeleteView(generics.GenericAPIView):
             return Response({'detail': 'Задача не найдена.'}, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-        is_organizer = str(task.event.event_user_id) == str(user.id)
+        is_organizer = Participant.objects.filter(event_id=event_id, event_user=user, is_organizer=True).exists()
         is_task_creator = str(task.created_by_id) == str(user.id)
 
         if not (is_task_creator or is_organizer):

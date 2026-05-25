@@ -25,18 +25,20 @@ export const useEventStore = defineStore('event', {
       }
     },
 
-    async getEvent(eventId) {
-      this.loading = true
-      this.error = null
+    async getEvent(eventId, { silent = false } = {}) {
+      if (!silent) {
+        this.loading = true
+        this.error = null
+      }
       try {
         const response = await api.get(`/events/${eventId}/`)
         this.currentEvent = response.data
         return response.data
       } catch (error) {
-        this.error = error.message || 'Не удалось загрузить событие'
+        if (!silent) this.error = error.message || 'Не удалось загрузить событие'
         return null
       } finally {
-        this.loading = false
+        if (!silent) this.loading = false
       }
     },
 

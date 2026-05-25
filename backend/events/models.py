@@ -66,6 +66,8 @@ class Participant(models.Model):
         related_name='event_user',
         )
 
+    is_organizer = models.BooleanField(default=False)
+
     class Meta:
         unique_together = ('event', 'event_user')
 

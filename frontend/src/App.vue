@@ -1,96 +1,76 @@
 <template>
-  <div id="app" class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
+  <div id="app" class="min-h-screen bg-white flex flex-col">
     <!-- Навигация -->
-    <nav class="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
+    <nav class="bg-white sticky top-0 z-50 border-b border-gray-200">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between h-14">
           <!-- Логотип -->
-          <router-link 
-            to="/" 
-            class="flex items-center space-x-3 hover:opacity-90 transition-opacity"
+          <router-link
+            to="/"
+            class="flex items-center gap-2 text-gray-900 hover:text-gray-600 transition-colors"
           >
-            <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-              <span class="text-white text-lg font-bold">🗓️</span>
-            </div>
-            <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-              Event Planner
-            </span>
+            <span class="text-lg">🗓️</span>
+            <span class="text-base font-semibold tracking-tight">Event Planner</span>
           </router-link>
-          <div class="flex items-center space-x-2 sm:space-x-4">
-            <!-- Основные ссылки -->
-            <router-link 
-              to="/" 
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
-              active-class="bg-blue-100 text-blue-700"
-            >
-              <span class="hidden sm:inline">Главная</span>
-              <span class="sm:hidden">🏠</span>
-            </router-link>
-            
-            <router-link 
-              to="/create" 
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
-              active-class="bg-blue-100 text-blue-700"
-            >
-              <span class="hidden sm:inline">Создать</span>
-              <span class="sm:hidden">➕</span>
-            </router-link>
-            
-            <!-- <router-link 
-              to="/event/demo" 
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 text-gray-700"
-              active-class="bg-blue-100 text-blue-700"
-            >
-              <span class="hidden sm:inline">Демо</span>
-              <span class="sm:hidden">👁️</span>
-            </router-link> -->
 
-            <!-- Авторизован: имя + выход -->
+          <div class="flex items-center gap-1">
+            <router-link
+              to="/"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
+              active-class="text-gray-900 font-medium"
+            >
+              Главная
+            </router-link>
+
+            <router-link
+              to="/create"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
+              active-class="text-gray-900 font-medium"
+            >
+              Создать
+            </router-link>
+
             <template v-if="authStore.isAuthenticated">
-              <span class="hidden sm:inline text-sm text-gray-600 font-medium px-2">
-                👤 {{ authStore.user.username }}
+              <span class="hidden sm:inline text-sm text-gray-500 px-2">
+                {{ authStore.user.username }}
               </span>
               <button
                 @click="logout"
-                class="px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
               >
-                <span class="hidden sm:inline">Выйти</span>
-                <span class="sm:hidden">🚪</span>
+                Выйти
               </button>
             </template>
 
-            <!-- Гость: войти + регистрация -->
             <template v-else>
               <router-link
                 to="/login"
-                class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
               >
-                <span class="hidden sm:inline">Войти</span>
-                <span class="sm:hidden">🔑</span>
+                Войти
               </router-link>
               <router-link
                 to="/register"
-                class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                class="px-3 py-1.5 text-sm bg-gray-900 text-white rounded-md hover:bg-gray-700 transition-colors"
               >
-                <span class="hidden sm:inline">Регистрация</span>
-                <span class="sm:hidden">📋</span>
+                Регистрация
               </router-link>
             </template>
           </div>
         </div>
       </div>
     </nav>
-    
+
     <!-- Основное содержимое -->
     <main class="flex-grow container mx-auto px-4 py-6 sm:py-8">
       <router-view />
     </main>
-    
+
     <!-- Футер -->
-    <footer class="bg-gray-800 text-gray-300 mt-auto border-t border-gray-700">
-      <div class="container mx-auto px-4 py-6">
-        <p class="text-sm text-center">
-          © 2024 Event Planner
+    <footer class="border-t border-gray-200 mt-auto">
+      <div class="container mx-auto px-4 py-5">
+        <p class="text-sm text-center text-gray-400">
+          © 2025 Event Planner
         </p>
       </div>
     </footer>

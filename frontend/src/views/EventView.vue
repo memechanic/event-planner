@@ -16,7 +16,7 @@
       </div>
       <h2 class="text-2xl font-bold text-gray-800 mb-2">Ошибка загрузки</h2>
       <p class="text-gray-600 mb-8">{{ error }}</p>
-      <router-link to="/" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all">
+      <router-link to="/" class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
         На главную
       </router-link>
     </div>
@@ -31,28 +31,34 @@
           <p class="text-gray-600">{{ event.description || 'Нет описания' }}</p>
           <div class="flex gap-4 text-sm text-gray-500 mt-3">
             <span>{{ dateOptions.length }} вариантов дат</span>
-            <span>{{ uniqueParticipants.length }} участников</span>
+            <span>{{ event.participants?.length ?? 0 }} участников</span>
           </div>
         </div>
 
         <div class="flex gap-2 flex-wrap">
           <span
-            v-if="isMember || isCreator"
+            v-if="isOrganizer"
+            class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-100 text-amber-700 rounded-xl font-medium text-sm"
+          >
+            👑 Вы организатор
+          </span>
+          <span
+            v-else-if="isMember"
             class="inline-flex items-center gap-1 px-4 py-2 bg-green-100 text-green-700 rounded-xl font-medium text-sm"
           >
             Вы участник
           </span>
           <button
-            v-else-if="!isCreator"
+            v-else
             @click="joinEvent"
             :disabled="joining"
-            class="px-5 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 disabled:opacity-50 transition"
+            class="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 disabled:opacity-40 transition-colors"
           >
             {{ joining ? 'Подождите...' : 'Присоединиться' }}
           </button>
           <button
             @click="scrollToLink"
-            class="px-5 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700 transition"
+            class="px-4 py-2 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
           >
             Пригласить
           </button>
@@ -68,7 +74,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- VOTE SECTION -->
-        <div class="lg:col-span-2 bg-white rounded-xl shadow p-6 border">
+        <div class="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200">
           <div class="flex items-center mb-4">
             <span class="text-2xl mr-2">📋</span>
             <h2 class="text-xl font-semibold text-gray-800">Голосование за даты</h2>
@@ -78,11 +84,11 @@
             <div
               v-for="option in dateOptions"
               :key="option.id"
-              @click="(isMember || isCreator) && selectOption(option)"
+              @click="isMember && selectOption(option)"
               class="border rounded-xl p-4 transition"
               :class="[
                 selectedOptionId === option.id ? 'bg-green-50 border-green-500' : 'border-gray-200',
-                (isMember || isCreator) ? 'cursor-pointer hover:border-green-400' : 'opacity-60 cursor-not-allowed'
+                isMember ? 'cursor-pointer hover:border-green-400' : 'opacity-60 cursor-not-allowed'
               ]"
             >
               <div class="flex justify-between items-center">
@@ -99,8 +105,8 @@
           <div v-if="voteSuccess" class="mt-3 text-sm text-green-600">Голос принят!</div>
 
           <button
-            v-if="isMember || isCreator"
-            class="mt-6 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition"
+            v-if="isMember"
+            class="mt-6 w-full py-2.5 bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             :disabled="!selectedOptionId || voting"
             @click="submitVote"
           >
@@ -111,11 +117,11 @@
           </p>
 
           <!-- Предложить дату -->
-          <div v-if="isMember || isCreator" class="mt-4 border-t pt-4">
+          <div v-if="isMember" class="mt-4 border-t pt-4">
             <button
               v-if="!showProposeForm"
               @click="showProposeForm = true"
-              class="w-full py-2 border-2 border-dashed border-gray-300 text-gray-500 rounded-xl hover:border-blue-400 hover:text-blue-600 transition text-sm"
+              class="w-full py-2 border border-dashed border-gray-300 text-gray-500 rounded-lg hover:border-gray-400 hover:text-gray-700 transition-colors text-sm"
             >
               + Предложить свою дату
             </button>
@@ -124,20 +130,20 @@
               <input
                 v-model="proposedDate"
                 type="datetime-local"
-                class="w-full p-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
               />
               <div v-if="proposeError" class="text-sm text-red-600">{{ proposeError }}</div>
               <div class="flex gap-2">
                 <button
                   @click="submitPropose"
                   :disabled="!proposedDate || proposing"
-                  class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm disabled:opacity-50 transition"
+                  class="flex-1 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm disabled:opacity-40 transition-colors"
                 >
                   {{ proposing ? 'Отправляю...' : 'Предложить' }}
                 </button>
                 <button
                   @click="showProposeForm = false; proposedDate = ''; proposeError = ''"
-                  class="px-4 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition"
+                  class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   Отмена
                 </button>
@@ -147,7 +153,7 @@
         </div>
 
         <!-- CHAT -->
-        <div class="bg-white rounded-xl shadow p-6 border flex flex-col" style="height: 480px;">
+        <div class="bg-white rounded-xl p-6 border border-gray-200 flex flex-col" style="height: 480px;">
           <div class="flex items-center mb-3">
             <span class="text-xl mr-2">💬</span>
             <h2 class="text-lg font-semibold text-gray-800">Чат события</h2>
@@ -158,7 +164,9 @@
               Сообщений пока нет
             </div>
             <div v-for="msg in messages" :key="msg.id">
-              <span class="font-medium text-gray-800 text-sm">{{ msg.sender_username || 'Аноним' }}</span>
+              <span class="font-medium text-gray-800 text-sm">
+                <span v-if="msg.sender_is_organizer" class="text-amber-500 mr-0.5">👑</span>{{ msg.sender_username || 'Аноним' }}
+              </span>
               <span class="text-xs text-gray-400 ml-2">{{ formatTime(msg.created_at) }}</span>
               <p class="text-sm text-gray-700 mt-0.5 break-words">{{ msg.text }}</p>
             </div>
@@ -177,7 +185,7 @@
               <button
                 @click="sendMessage"
                 :disabled="!chatText.trim() || chatSending"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition"
+                class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm hover:bg-gray-700 disabled:opacity-40 transition-colors"
               >
                 {{ chatSending ? '...' : '→' }}
               </button>
@@ -192,7 +200,7 @@
       </div>
 
       <!-- TASKS -->
-      <div class="bg-white rounded-xl shadow p-6 border">
+      <div class="bg-white rounded-xl p-6 border border-gray-200">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <span class="text-xl">📋</span>
@@ -200,7 +208,7 @@
             <span class="text-sm font-normal text-gray-400">({{ tasks.length }})</span>
           </h2>
           <button
-            v-if="isMember || isCreator"
+            v-if="isMember"
             @click="showAddTaskForm = !showAddTaskForm"
             class="text-sm text-blue-600 hover:text-blue-800 font-medium transition"
           >
@@ -286,7 +294,7 @@
 
                 <!-- Дропдаун назначения для организатора -->
                 <select
-                  v-if="isCreator"
+                  v-if="isOrganizer"
                   :value="task.assigned_to || ''"
                   @change="assignTask(task.id, $event.target.value || null)"
                   class="text-xs border rounded px-1 py-0.5 text-gray-600"
@@ -312,33 +320,53 @@
           </div>
         </div>
         <p v-else class="text-sm text-gray-400">
-          {{ (isMember || isCreator) ? 'Задач пока нет. Добавьте первую!' : 'Задач пока нет.' }}
+          {{ isMember ? 'Задач пока нет. Добавьте первую!' : 'Задач пока нет.' }}
         </p>
       </div>
 
       <!-- PARTICIPANTS -->
-      <div class="bg-white rounded-xl shadow p-6 border">
+      <div class="bg-white rounded-xl p-6 border border-gray-200">
         <div class="flex items-center mb-3">
           <span class="text-xl mr-2">👥</span>
           <h2 class="text-lg font-semibold text-gray-800">
             Участники
-            <span class="ml-2 text-sm font-normal text-gray-400">({{ uniqueParticipants.length }})</span>
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ event.participants?.length ?? 0 }})</span>
           </h2>
         </div>
-        <div v-if="uniqueParticipants.length" class="flex flex-wrap gap-3 mt-3">
+        <div v-if="event.participants?.length" class="space-y-2 mt-3">
           <div
-            v-for="name in uniqueParticipants"
-            :key="name"
-            class="px-4 py-2 border rounded-xl bg-gray-50 text-gray-800"
+            v-for="p in event.participants"
+            :key="p.id"
+            class="flex items-center justify-between px-4 py-2 border rounded-xl"
+            :class="p.is_organizer ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'"
           >
-            {{ name }}
+            <span class="flex items-center gap-1.5">
+              <span v-if="p.is_organizer" class="text-amber-500 text-sm leading-none">👑</span>
+              <span class="text-gray-800 text-sm font-medium">{{ p.username }}</span>
+            </span>
+            <div class="flex gap-2">
+              <button
+                v-if="isOrganizer && !p.is_organizer && p.event_user !== authStore.userId"
+                @click="assignOrganizer(p.id)"
+                class="text-xs text-amber-600 hover:text-amber-800 font-medium transition"
+              >
+                Сделать организатором
+              </button>
+              <button
+                v-if="isEventCreator && p.is_organizer && p.event_user !== event.event_user"
+                @click="removeOrganizer(p.id)"
+                class="text-xs text-red-400 hover:text-red-600 transition"
+              >
+                Снять
+              </button>
+            </div>
           </div>
         </div>
         <p v-else class="text-sm text-gray-400 mt-2">Пока нет участников. Поделитесь ссылкой!</p>
       </div>
 
       <!-- INVITE LINK -->
-      <div ref="linkSection" class="bg-white rounded-xl shadow p-6 border">
+      <div ref="linkSection" class="bg-white rounded-xl p-6 border border-gray-200">
         <h2 class="text-lg font-semibold mb-3 flex items-center">
           <span class="mr-2 text-xl">🔗</span> Ссылка для приглашения
         </h2>
@@ -346,7 +374,7 @@
           <input :value="eventUrl" readonly class="flex-1 p-3 rounded-xl border bg-gray-50 text-sm" />
           <button
             @click="copyLink"
-            class="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition whitespace-nowrap"
+            class="px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap"
           >
             {{ copied ? 'Скопировано!' : 'Копировать' }}
           </button>
@@ -385,10 +413,13 @@ const joinError = ref('')
 const event = computed(() => eventStore.currentEvent)
 const loading = computed(() => eventStore.loading)
 const error = computed(() => eventStore.error)
-const uniqueParticipants = computed(() => eventStore.uniqueParticipants)
 const dateOptions = computed(() => event.value?.date_options ?? [])
 const isMember = computed(() => eventStore.isMember(authStore.userId))
-const isCreator = computed(() => !!event.value?.event_user && event.value.event_user === authStore.userId)
+const currentParticipant = computed(() =>
+  event.value?.participants?.find(p => p.event_user === authStore.userId) ?? null
+)
+const isOrganizer = computed(() => currentParticipant.value?.is_organizer === true)
+const isEventCreator = computed(() => !!event.value?.event_user && event.value.event_user === authStore.userId)
 
 const eventUrl = computed(() =>
   event.value?.id ? `${window.location.origin}/event/${event.value.id}` : ''
@@ -401,20 +432,16 @@ const taskDescription = ref('')
 const showAddTaskForm = ref(false)
 const addingTask = ref(false)
 
-const currentParticipant = computed(() =>
-  event.value?.participants?.find(p => p.event_user === authStore.userId) ?? null
-)
-
 const canToggleDone = (task) => {
-  if (isCreator.value) return true
+  if (isOrganizer.value) return true
   return !!currentParticipant.value && task.assigned_to === currentParticipant.value.id
 }
 
 const canSelfAssign = (task) =>
-  (isMember.value && !isCreator.value) && !task.assigned_to
+  isMember.value && !isOrganizer.value && !task.assigned_to
 
 const canDeleteTask = (task) =>
-  isCreator.value || task.created_by === authStore.userId
+  isOrganizer.value || task.created_by === authStore.userId
 
 const loadTasks = async () => {
   if (!route.params.id) return
@@ -474,7 +501,21 @@ const chatError = ref('')
 const chatContainer = ref(null)
 let pollInterval = null
 
-const canChat = computed(() => isMember.value || isCreator.value)
+const canChat = computed(() => isMember.value || isOrganizer.value)
+
+const assignOrganizer = async (participantId) => {
+  try {
+    await api.patch(`/events/${event.value.id}/participants/${participantId}/role/`, { is_organizer: true })
+    await eventStore.getEvent(event.value.id)
+  } catch {}
+}
+
+const removeOrganizer = async (participantId) => {
+  try {
+    await api.patch(`/events/${event.value.id}/participants/${participantId}/role/`, { is_organizer: false })
+    await eventStore.getEvent(event.value.id)
+  } catch {}
+}
 
 const scrollChatToBottom = async () => {
   await nextTick()
@@ -505,11 +546,16 @@ const sendMessage = async () => {
   }
 }
 
+const refreshEvent = async () => {
+  if (!route.params.id) return
+  await eventStore.getEvent(route.params.id, { silent: true })
+}
+
 const startPolling = () => {
   stopPolling()
   loadMessages()
   loadTasks()
-  pollInterval = setInterval(() => { loadMessages(); loadTasks() }, 3000)
+  pollInterval = setInterval(() => { refreshEvent(); loadMessages(); loadTasks() }, 3000)
 }
 
 const stopPolling = () => {

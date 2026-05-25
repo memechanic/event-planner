@@ -2,11 +2,8 @@
   <div class="max-w-6xl mx-auto px-4 py-8 md:py-12 lg:py-16">
     <!-- Hero Section -->
     <div class="text-center mb-16 lg:mb-24">
-      <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6">
-        <span class="inline-block mr-3">🗓️</span>
-        <span class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent">
-          Event Planner
-        </span>
+      <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 text-gray-900">
+        🗓️ Event Planner
       </h1>
       
       <p class="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 md:mb-12 max-w-3xl mx-auto px-4">
@@ -14,11 +11,10 @@
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
-        <router-link 
-          to="/create" 
-          class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 text-lg"
+        <router-link
+          to="/create"
+          class="px-6 py-2.5 bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
         >
-          <span class="text-xl">📅</span>
           Создать событие
         </router-link>
 
@@ -53,9 +49,9 @@
     </div> -->
     
     <!-- Calendar Section -->
-    <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-gray-100 mb-10">
+    <div class="bg-white rounded-xl p-6 md:p-8 border border-gray-200 mb-8">
       <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-gray-800">
+        <h2 class="text-xl font-semibold text-gray-900">
           Интерактивный календарь
         </h2>
         <span class="text-sm md:text-base text-gray-500">
@@ -152,9 +148,9 @@
     </div>
 
     <!-- User Events Section -->
-    <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-gray-100 mb-10">
+    <div class="bg-white rounded-xl p-6 md:p-8 border border-gray-200 mb-8">
       <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-gray-800">
+        <h2 class="text-xl font-semibold text-gray-900">
           Мои события
         </h2>
         <span v-if="authStore.isAuthenticated" class="text-sm md:text-base text-gray-500">
@@ -179,7 +175,7 @@
           <li
             v-for="event in userEvents"
             :key="event.id"
-            class="bg-gray-50 rounded-xl border border-gray-200 p-4 flex items-start justify-between gap-4"
+            class="rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4 hover:bg-gray-50 transition-colors"
           >
             <div>
               <p class="font-semibold text-gray-800">{{ event.title }}</p>
@@ -211,15 +207,15 @@
     </div>
 
     <!-- How It Works Section -->
-    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-6 md:p-10 lg:p-12 shadow-xl mb-8">
-      <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 md:mb-12 text-center">
+    <div class="rounded-xl p-6 md:p-8 border border-gray-200 mb-8">
+      <h2 class="text-xl font-semibold text-gray-900 mb-8 text-center">
         Как это работает
       </h2>
       
       <div class="max-w-3xl mx-auto">
         <ol class="space-y-6 md:space-y-8">
           <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg">
+            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
               1
             </div>
             <div class="pt-2">
@@ -230,7 +226,7 @@
           </li>
           
           <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg">
+            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
               2
             </div>
             <div class="pt-2">
@@ -241,7 +237,7 @@
           </li>
           
           <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg">
+            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
               3
             </div>
             <div class="pt-2">
@@ -252,7 +248,7 @@
           </li>
           
           <li class="flex items-start gap-4 md:gap-6">
-            <div class="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg">
+            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg flex items-center justify-center text-sm font-semibold">
               4
             </div>
             <div class="pt-2">
