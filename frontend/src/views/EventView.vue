@@ -147,12 +147,46 @@
         </div>
 
         <!-- CHAT -->
-        <div class="bg-white rounded-xl shadow p-6 border flex flex-col">
+        <div class="bg-white rounded-xl shadow p-6 border flex flex-col" style="height: 480px;">
           <div class="flex items-center mb-3">
             <span class="text-xl mr-2">💬</span>
             <h2 class="text-lg font-semibold text-gray-800">Чат события</h2>
           </div>
-          <p class="text-sm text-gray-400 mt-auto text-center">Чат будет доступен в следующей версии</p>
+
+          <div ref="chatContainer" class="flex-1 overflow-y-auto space-y-3 pr-1">
+            <div v-if="messages.length === 0" class="text-sm text-gray-400 text-center pt-6">
+              Сообщений пока нет
+            </div>
+            <div v-for="msg in messages" :key="msg.id">
+              <span class="font-medium text-gray-800 text-sm">{{ msg.sender_username || 'Аноним' }}</span>
+              <span class="text-xs text-gray-400 ml-2">{{ formatTime(msg.created_at) }}</span>
+              <p class="text-sm text-gray-700 mt-0.5 break-words">{{ msg.text }}</p>
+            </div>
+          </div>
+
+          <div v-if="canChat" class="border-t pt-3 mt-3">
+            <div class="flex gap-2">
+              <input
+                v-model="chatText"
+                @keydown.enter.prevent="sendMessage"
+                type="text"
+                placeholder="Написать сообщение..."
+                class="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                :disabled="chatSending"
+              />
+              <button
+                @click="sendMessage"
+                :disabled="!chatText.trim() || chatSending"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition"
+              >
+                {{ chatSending ? '...' : '→' }}
+              </button>
+            </div>
+            <p v-if="chatError" class="text-xs text-red-500 mt-1">{{ chatError }}</p>
+          </div>
+          <p v-else class="text-xs text-gray-400 text-center mt-3 border-t pt-3">
+            {{ authStore.isAuthenticated ? 'Присоединитесь, чтобы написать' : 'Войдите, чтобы написать' }}
+          </p>
         </div>
 
       </div>
@@ -199,10 +233,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEventStore } from '@/stores/event'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -234,8 +269,63 @@ const eventUrl = computed(() =>
   event.value?.id ? `${window.location.origin}/event/${event.value.id}` : ''
 )
 
-onMounted(() => loadEvent())
-watch(() => route.params.id, () => loadEvent())
+// ── Chat ─────────────────────────────────────────────────────────────────────
+const messages = ref([])
+const chatText = ref('')
+const chatSending = ref(false)
+const chatError = ref('')
+const chatContainer = ref(null)
+let pollInterval = null
+
+const canChat = computed(() => isMember.value || isCreator.value)
+
+const scrollChatToBottom = async () => {
+  await nextTick()
+  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+}
+
+const loadMessages = async () => {
+  if (!route.params.id) return
+  try {
+    const res = await api.get(`/events/${route.params.id}/messages/`)
+    messages.value = res.data
+    scrollChatToBottom()
+  } catch {}
+}
+
+const sendMessage = async () => {
+  if (!chatText.value.trim() || !event.value?.id) return
+  chatSending.value = true
+  chatError.value = ''
+  try {
+    await api.post(`/events/${event.value.id}/messages/`, { text: chatText.value.trim() })
+    chatText.value = ''
+    await loadMessages()
+  } catch (err) {
+    chatError.value = err.message || 'Ошибка отправки'
+  } finally {
+    chatSending.value = false
+  }
+}
+
+const startPolling = () => {
+  stopPolling()
+  loadMessages()
+  pollInterval = setInterval(loadMessages, 3000)
+}
+
+const stopPolling = () => {
+  if (pollInterval) { clearInterval(pollInterval); pollInterval = null }
+}
+
+const formatTime = (dateString) =>
+  new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+onMounted(() => { loadEvent(); startPolling() })
+onUnmounted(() => stopPolling())
+watch(() => route.params.id, () => { loadEvent(); startPolling() })
 
 const loadEvent = async () => {
   if (!route.params.id) return

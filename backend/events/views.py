@@ -179,7 +179,11 @@ class EventMessagesView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         event_id = self.kwargs['event_id']
-        serializer.save(event_id=event_id)
+        participant = Participant.objects.filter(
+            event_id=event_id,
+            event_user=self.request.user,
+        ).first()
+        serializer.save(event_id=event_id, participant=participant)
 
     def get_queryset(self) -> QuerySet[Message]:  # type: ignore
         event_id = self.kwargs['event_id']
